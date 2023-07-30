@@ -1,0 +1,1 @@
+C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\x64\Debug\MnistNN.exe

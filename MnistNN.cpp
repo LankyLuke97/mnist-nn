@@ -2,10 +2,22 @@
 //
 
 #include <iostream>
+#include "DataReader.h"
 
-int main()
-{
-    std::cout << "Hello World!\n";
+int main() {
+    std::string trainingImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-images.idx3-ubyte";
+    std::string traininglabelsFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-labels.idx1-ubyte";
+    std::string testImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\t10k-images.idx3-ubyte";
+    std::string testlabelsFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\t10k-labels.idx1-ubyte";
+    std::vector<std::vector<uint8_t>> trainingImages = DataReader::readImageFile(trainingImagesFile);
+    std::vector<uint8_t> trainingLabels = DataReader::readLableFile(traininglabelsFile);
+    std::vector<std::vector<uint8_t>> testImages = DataReader::readImageFile(testImagesFile);
+    std::vector<uint8_t> testLabels = DataReader::readLableFile(testlabelsFile);
+
+    std::cout << trainingImages.size() << ", " << trainingImages[0].size() << std::endl;
+    std::cout << trainingLabels.size() << std::endl;
+    std::cout << testImages.size() << ", " << testImages[0].size() << std::endl;
+    std::cout << testLabels.size() << std::endl;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
