@@ -1,10 +1,12 @@
 // MnistNN.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+#include <ctime>
 #include <iostream>
 #include "DataReader.h"
 
 int main() {
+    srand(time(0));
     std::string trainingImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-images.idx3-ubyte";
     std::string traininglabelsFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-labels.idx1-ubyte";
     std::string testImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\t10k-images.idx3-ubyte";
