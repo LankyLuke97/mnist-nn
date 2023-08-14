@@ -1,2 +1,10 @@
 ﻿  MnistNN.cpp
+C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\DataReader.h(74,26): warning C4018: '<': signed/unsigned mismatch
+C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\Helper.h(22,18): warning C4244: 'initializing': conversion from 'Eigen::EigenBase<Derived>::Index' to 'int', possible loss of data
+          with
+          [
+              Derived=Eigen::Matrix<int,-1,1,0,-1,1>
+          ]
+C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\Network.h(126,30): warning C4244: 'initializing': conversion from 'Eigen::Index' to 'int', possible loss of data
+C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\MnistNN.cpp(12,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   MnistNN.vcxproj -> C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\x64\Debug\MnistNN.exe

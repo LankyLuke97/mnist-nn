@@ -133,6 +133,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataReader.h" />
+    <ClInclude Include="Helper.h" />
+    <ClInclude Include="Layer.h" />
+    <ClInclude Include="Network.h" />
     <ClInclude Include="Neuron.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

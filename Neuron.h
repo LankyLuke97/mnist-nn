@@ -4,15 +4,15 @@
 
 class Neuron {
 public:
-	float bias;
-	Eigen::RowVectorXf weights;
+	double bias;
+	Eigen::RowVectorXd weights;
 
 	Neuron(int inputs) {
-		bias = (float)rand() / RAND_MAX;
-		weights = Eigen::RowVectorXf::Random(inputs);
+		bias = (double)rand() / RAND_MAX;
+		weights = Eigen::RowVectorXd::Random(inputs);
 	}
 
-	float sigmoidActivation(Eigen::RowVectorXf x) {
+	double sigmoidActivation(Eigen::RowVectorXd x) {
 		return 1.0f / (1.0f + exp((weights.array() * x.array()).sum() + bias));
 	}
 };

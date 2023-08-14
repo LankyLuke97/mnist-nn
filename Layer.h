@@ -7,18 +7,18 @@
 
 class Layer {
 public:
-	Eigen::RowVectorXf biases;
-	Eigen::MatrixXf weights;
+	Eigen::RowVectorXd biases;
+	Eigen::MatrixXd weights;
 
 	Layer(int inputs, int numberOfNeurons) {
-		biases = Eigen::RowVectorXf::Random(numberOfNeurons);
-		weights = Eigen::MatrixXf::Random(inputs, numberOfNeurons);
+		biases = Eigen::RowVectorXd::Random(numberOfNeurons);
+		weights = Eigen::MatrixXd::Random(inputs, numberOfNeurons);
 	}
 
-	Eigen::MatrixXf feedForward(Eigen::MatrixXf input) {
+	Eigen::MatrixXd feedForward(Eigen::MatrixXd input) {
 		assert(input.cols() == weights.rows());
 		assert(biases.cols() == weights.cols());
 
-		return ((input * weights).rowwise() + biases).unaryExpr<float(*)(float)>(&Helper::sigmoid); // Parameterise activation function
+		return (input * weights).rowwise() + biases; // Parameterise activation function
 	}
 };

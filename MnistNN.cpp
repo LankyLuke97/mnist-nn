@@ -2,8 +2,11 @@
 //
 
 #include <ctime>
+#include <Eigen/Dense>
 #include <iostream>
 #include "DataReader.h"
+#include "Helper.h"
+#include "Network.h"
 
 int main() {
     srand(time(0));
@@ -11,15 +14,21 @@ int main() {
     std::string traininglabelsFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-labels.idx1-ubyte";
     std::string testImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\t10k-images.idx3-ubyte";
     std::string testlabelsFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\t10k-labels.idx1-ubyte";
-    std::vector<std::vector<uint8_t>> trainingImages = DataReader::readImageFile(trainingImagesFile);
-    std::vector<uint8_t> trainingLabels = DataReader::readLableFile(traininglabelsFile);
-    std::vector<std::vector<uint8_t>> testImages = DataReader::readImageFile(testImagesFile);
-    std::vector<uint8_t> testLabels = DataReader::readLableFile(testlabelsFile);
+    Eigen::MatrixXd trainingImages = DataReader::readImageFile(trainingImagesFile);
+    Eigen::MatrixXd trainingLabels = Helper::oneHotEncode(DataReader::readLableFile(traininglabelsFile), 10);
+    Eigen::MatrixXd testImages = DataReader::readImageFile(testImagesFile);
+    Eigen::MatrixXd testLabels = Helper::oneHotEncode(DataReader::readLableFile(testlabelsFile), 10);
 
-    std::cout << trainingImages.size() << ", " << trainingImages[0].size() << std::endl;
+    std::cout << trainingImages.rows() << ", " << trainingImages.cols() << std::endl;
     std::cout << trainingLabels.size() << std::endl;
-    std::cout << testImages.size() << ", " << testImages[0].size() << std::endl;
+    std::cout << testImages.rows() << ", " << testImages.cols() << std::endl;
     std::cout << testLabels.size() << std::endl;
+
+    double validationRatio = 0.9f;
+    int splitIndex = static_cast<int>(trainingImages.rows() * validationRatio);
+
+    Network network = Network({784, 30, 10});
+    network.stochasticGradientDescent(trainingImages.topRows(splitIndex), trainingLabels.topRows(splitIndex), trainingImages.bottomRows(trainingImages.rows() - splitIndex), trainingLabels.bottomRows(trainingLabels.rows() - splitIndex), 50, 1000, 3.0f);
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

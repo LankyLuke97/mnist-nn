@@ -1,17 +1,18 @@
 #pragma once
 
+#include <Eigen/Dense>
 #include <iostream>
 #include <fstream>
 #include <vector>
 
 class DataReader {
 public:
-    static std::vector<std::vector<uint8_t>> readImageFile(const std::string& filename) {
+    static Eigen::MatrixXd readImageFile(const std::string& filename) {
         std::ifstream file(filename, std::ios::binary);
 
         if (!file) {
             std::cerr << "Error opening file: " << filename << std::endl;
-            return std::vector<std::vector<uint8_t>>(); // Return an empty vector of vectors
+            return Eigen::MatrixXd(); // Return an empty matrix
         }
 
         // Step 2: Parse the file headers
@@ -30,28 +31,32 @@ public:
 
         if (magic_number != 2051) {
             std::cerr << "Invalid magic number, not an IDX file." << std::endl;
-            return std::vector<std::vector<uint8_t>>(); // Return an empty vector of vectors
+            return Eigen::MatrixXd(); // Return an empty matrix
         }
 
         // Step 3: Read the data into a vector of vectors
-        std::vector<std::vector<uint8_t>> data(num_datapoints, std::vector<uint8_t>(rows * cols));
-        for (int i = 0; i < num_datapoints; ++i) {
-            file.read(reinterpret_cast<char*>(data[i].data()), rows * cols);
+        Eigen::MatrixXd data(num_datapoints, rows * cols);
+        for(int i = 0; i < num_datapoints; i++) {
+            for(int j = 0; j < rows * cols; j++) {
+                uint8_t pixelValue;
+                file.read(reinterpret_cast<char*>(&pixelValue), sizeof(pixelValue));
+                data(i, j) = static_cast<float>(pixelValue) / 255.0f; // Normalize pixel values to [0, 1]
+            }
         }
 
         return data;
     }
 
-    static std::vector<uint8_t> readLableFile(const std::string& filename) {
+    static Eigen::VectorXi readLableFile(const std::string& filename) {
         std::ifstream file(filename, std::ios::binary);
 
-        if (!file) {
+        if(!file) {
             std::cerr << "Error opening file: " << filename << std::endl;
-            return std::vector<uint8_t>(); // Return an empty vector
+            return Eigen::VectorXi(); // Return an empty vector
         }
 
         // Step 2: Parse the file headers
-        int magic_number, num_datapoints;
+        uint32_t magic_number, num_datapoints;
         file.read(reinterpret_cast<char*>(&magic_number), sizeof(magic_number));
         file.read(reinterpret_cast<char*>(&num_datapoints), sizeof(num_datapoints));
 
@@ -60,14 +65,17 @@ public:
 
         std::cout << "Magic number: " << magic_number << std::endl;
 
-        if (magic_number != 2049) {
+        if(magic_number != 2049) {
             std::cerr << "Invalid magic number, not an IDX file." << std::endl;
-            return std::vector<uint8_t>(); // Return an empty vector of vectors
+            return Eigen::VectorXi(); // Return an empty vector
         }
 
-        // Step 3: Read the data into a vector of vectors
-        std::vector<uint8_t> data(num_datapoints);
-        file.read(reinterpret_cast<char*>(data.data()), num_datapoints);
+        Eigen::VectorXi data(num_datapoints);
+        for(int i = 0; i < num_datapoints; ++i) {
+            uint8_t label;
+            file.read(reinterpret_cast<char*>(&label), sizeof(label));
+            data(i) = static_cast<int>(label);
+        }
 
         return data;
     }
