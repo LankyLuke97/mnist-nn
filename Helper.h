@@ -5,7 +5,7 @@
 class Helper {
 public:
 	static double sigmoid(double input) {
-		return 1.0f / (1.0f + exp(input));
+		return 1.0f / (1.0f + exp(-input));
 	}
 
 	static double sigmoidPrime(double input) {
@@ -16,6 +16,12 @@ public:
 	static Eigen::RowVectorXd softmax(Eigen::VectorXd input) {
 		Eigen::RowVectorXd exponential = input.array().exp();
 		return exponential / exponential.sum();
+	}
+
+	static Eigen::MatrixXd applyRowWiseSoftmax(const Eigen::MatrixXd& input) {
+		Eigen::MatrixXd expMatrix = input.array().exp();
+		Eigen::VectorXd rowSums = expMatrix.rowwise().sum();
+		return (expMatrix.array().colwise() / rowSums.array()).matrix();
 	}
 
 	static Eigen::MatrixXd oneHotEncode(Eigen::VectorXi input, int classes) {

@@ -15,7 +15,7 @@ public:
 
 	std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> backPropagation(Eigen::MatrixXd trainingData, Eigen::MatrixXd oneHotEncodedLabels) {
 		/*
-		* trainingData is m*n, where m is the number of samples in the minibatch and n is the number of features
+		* trainingData is n*m, where m is the number of samples in the minibatch and n is the number of features
 		* oneHotEncodedLabels is m*10
 		*/
 		std::vector<Eigen::MatrixXd> nabla_b(layers.size(), Eigen::MatrixXd::Zero(1, 1));
@@ -27,8 +27,8 @@ public:
 		} */
 
 		/*
-		* layers.biases = [1 * 30, 1 * 10]
-		* layers.weights = [784 * 30, 30 * 10]
+		* layers.biases = [30 * 1, 10 * 1]
+		* layers.weights = [30 * 784, 10 * 30]
 		*/
 
 		Eigen::MatrixXd activation = trainingData;
@@ -43,10 +43,10 @@ public:
 		}
 		/*
 		* Take an example network here - 784 inputs, 30 hidden neurons, 10 output neurons
-		* activations will have dimensions [m * 784, m * 30, m * 10]
-		* zs will have dimensions [m * 30, m * 10]
+		* activations will have dimensions [784 * m, 30 * m, 10 * m]
+		* zs will have dimensions [30 * m, 10 * m]
 		* Delta, then is also going to be a matrix - these need to be elementwise multiplications
-		* Delta dimensions here will be m * 10
+		* Delta dimensions here will be 10 * m
 		* Important here - weights and biases both contain 2 items, as does zs, but num_layers is 3, as is the length 
 		* of activations, as we start with the input data
 		*/
@@ -55,21 +55,21 @@ public:
 		nabla_b.reserve(layers.size());
 		nabla_w.reserve(layers.size());
 		nabla_b[nabla_b.size() - 1] = delta;
-		nabla_w[nabla_w.size() - 1] = activations[activations.size() - 2].transpose() * delta;
+		nabla_w[nabla_w.size() - 1] = delta * activations[activations.size() - 2].transpose();
 
 		/* 
-		* At this point, nabla_b is [ _, m * 10], nabla_w is [ _, 30 * 10]
+		* At this point, nabla_b is [ _, 10 * m, nabla_w is [ _, 10 * 30]
 		*/
 
 		for(int i = 2; i < activations.size(); i++) {
 			/*
-			* i = 2, sp and zs[0] = m * 30, delta is m * 10 initially, layers[1].weights.transpose is 10 * 30, delta ends as m * 30
-			* activations[0].transpose = 784 * m
+			* i = 2, sp and zs[0] = 30 * m, delta is 10 * m initially, layers[1].weights.transpose is 30 * 10, delta ends as 30 * m
+			* activations[0] = 784 * m
 			*/
 			Eigen::MatrixXd sp = zs[zs.size() - i].unaryExpr<double(*)(double)>(&Helper::sigmoidPrime);
-			delta = (delta * layers[layers.size() - i + 1].weights.transpose()).cwiseProduct(sp);
+			delta = (layers[layers.size() - i + 1].weights.transpose() * delta).cwiseProduct(sp);
 			nabla_b[nabla_b.size() - i] = delta;
-			nabla_w[nabla_w.size() - i] = activations[activations.size() - i - 1].transpose() * delta;
+			nabla_w[nabla_w.size() - i] = delta * activations[activations.size() - i - 1].transpose();
 		}
 
 		/*
@@ -80,6 +80,7 @@ public:
 	}
 
 	double calculateCost(Eigen::MatrixXd oneHotEncodedLabels, Eigen::MatrixXd predictions) {
+		predictions = Helper::applyRowWiseSoftmax(predictions);
 		return (oneHotEncodedLabels - predictions).array().square().sum() / (2 * predictions.rows());
 	}
 
@@ -87,12 +88,12 @@ public:
 		int correct = 0;
 		Eigen::MatrixXd predictions = forwardPass(validationData);
 
-		Eigen::VectorXi maxIndices(predictions.rows());
-		for(Eigen::Index i = 0; i < predictions.rows(); ++i) {
+		for(Eigen::Index i = 0; i < predictions.cols(); ++i) {
 			Eigen::Index labelIndex;
 			Eigen::Index predictionIndex;
-			validationLabels.row(i).maxCoeff(&labelIndex);
-			predictions.row(i).maxCoeff(&predictionIndex);
+			validationLabels.col(i).maxCoeff(&labelIndex);
+			predictions.col(i).maxCoeff(&predictionIndex);
+
 			correct += 1 * (predictionIndex == labelIndex);
 		}
 
@@ -105,7 +106,6 @@ public:
 		*/
 
 		for(int i = 0; i < layers.size(); i++) {
-			//Need to apply softmax by row as well
 			activations = layers[i].feedForward(activations).unaryExpr<double(*)(double)>(&Helper::sigmoid);
 		}
 
@@ -118,17 +118,16 @@ public:
 
 	void stochasticGradientDescent(Eigen::MatrixXd trainingData, Eigen::MatrixXd trainingLabels, Eigen::MatrixXd validationData, Eigen::MatrixXd validationLabels, int epochs, int miniBatchSize, double eta) {
 		/*
-		* trainingData is m*n, where m is number of samples and n is number of featurs
-		* trainingLabels is m*10
-		* validationData is k*n, where k is the number of samples in the validation set
-		* validationLabels is k*10
+		* trainingData is n*m, where m is number of samples and n is number of featurs - in this case, 784 * ~50000
+		* trainingLabels is 10*m
+		* validationData is n*k, where k is the number of samples in the validation set - in this case 784 * ~10000
+		* validationLabels is 10*k
 		*/
-		int numberOfTrainingInputs = trainingData.rows();
+		int numberOfTrainingInputs = trainingData.cols();
 		for(int j = 0; j < epochs; j++) {
 			std::vector<int> shuffledIndeces(numberOfTrainingInputs);
 			for(int i = 0; i < numberOfTrainingInputs; i++) {
 				shuffledIndeces[i] = i;
-				if(i >= trainingData.rows()) std::cout << "uh oh" << std::endl;
 			}
 
 #if __cplusplus >= 201703L // Check if C++17 or higher
@@ -141,7 +140,6 @@ public:
 			std::random_shuffle(shuffledIndeces.begin(), shuffledIndeces.end());
 #endif	
 			for(int k = 0; k < numberOfTrainingInputs; k += miniBatchSize) {
-				std::cout << "K: " << k << std::endl;
 				/*
 				* miniBatchData is miniBatchSize*n
 				* miniBatchLabels is miniBatchSize*10
@@ -154,20 +152,20 @@ public:
 					miniBatchIndices[i] = shuffledIndeces[k + i];
 				}
 
-				Eigen::MatrixXd miniBatchData = trainingData(miniBatchIndices, Eigen::all);
-				Eigen::MatrixXd miniBatchLabels = trainingLabels(miniBatchIndices, Eigen::all);
+				Eigen::MatrixXd miniBatchData = trainingData(Eigen::all, miniBatchIndices);
+				Eigen::MatrixXd miniBatchLabels = trainingLabels(Eigen::all,miniBatchIndices);
 
 				updateMiniBatch(miniBatchData, miniBatchLabels, eta);
 			}
 
 			int correct = evaluate(validationData, validationLabels);
-			std::cout << "Epoch " << j << ": " << correct << "/" << validationData.rows() << std::endl;
+			std::cout << "Epoch " << j << ": " << correct << "/" << validationData.cols() << std::endl;
 		}
 	}
 
 	void updateMiniBatch(Eigen::MatrixXd trainingMiniBatch, Eigen::MatrixXd oneHotEncodedMiniBatchLabels, double eta) {
 		/*
-		* trainingMiniBatch is m*n, where m is the number of samples in the minibatch and n is the number of features
+		* trainingMiniBatch is n*m, where m is the number of samples in the minibatch and n is the number of features
 		* oneHotEncodedMiniBatchLabels0 is m*10
 		*/
 		std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> pair = backPropagation(trainingMiniBatch, oneHotEncodedMiniBatchLabels);
@@ -179,8 +177,8 @@ public:
 		*/
 
 		for(int i = 0; i < layers.size(); i++) {
-			layers[i].biases = layers[i].biases - ((eta / trainingMiniBatch.rows()) * nabla_b[i].colwise().sum());
-			layers[i].weights = layers[i].weights - ((eta / trainingMiniBatch.rows()) * nabla_w[i]);
+			layers[i].biases = layers[i].biases - ((eta / trainingMiniBatch.cols()) * nabla_b[i].rowwise().sum());
+			layers[i].weights = layers[i].weights - ((eta / trainingMiniBatch.cols()) * nabla_w[i]);
 		}
 	}
 };

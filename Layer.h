@@ -7,18 +7,18 @@
 
 class Layer {
 public:
-	Eigen::RowVectorXd biases;
+	Eigen::VectorXd biases;
 	Eigen::MatrixXd weights;
 
 	Layer(int inputs, int numberOfNeurons) {
-		biases = Eigen::RowVectorXd::Random(numberOfNeurons);
-		weights = Eigen::MatrixXd::Random(inputs, numberOfNeurons);
+		biases = Eigen::VectorXd::Random(numberOfNeurons);
+		weights = Eigen::MatrixXd::Random(numberOfNeurons, inputs);
 	}
 
 	Eigen::MatrixXd feedForward(Eigen::MatrixXd input) {
-		assert(input.cols() == weights.rows());
-		assert(biases.cols() == weights.cols());
+		assert(input.rows() == weights.cols());
+		assert(biases.rows() == weights.rows());
 
-		return (input * weights).rowwise() + biases; // Parameterise activation function
+		return (weights * input).colwise() + biases;
 	}
 };

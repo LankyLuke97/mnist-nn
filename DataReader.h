@@ -40,11 +40,11 @@ public:
             for(int j = 0; j < rows * cols; j++) {
                 uint8_t pixelValue;
                 file.read(reinterpret_cast<char*>(&pixelValue), sizeof(pixelValue));
-                data(i, j) = static_cast<float>(pixelValue) / 255.0f; // Normalize pixel values to [0, 1]
+                data(i, j) = static_cast<double>(pixelValue) / 255.0; // Normalize pixel values to [0, 1]
             }
         }
 
-        return data;
+        return data.transpose();
     }
 
     static Eigen::VectorXi readLableFile(const std::string& filename) {

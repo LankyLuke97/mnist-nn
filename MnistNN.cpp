@@ -15,20 +15,23 @@ int main() {
     std::string testImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\t10k-images.idx3-ubyte";
     std::string testlabelsFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\t10k-labels.idx1-ubyte";
     Eigen::MatrixXd trainingImages = DataReader::readImageFile(trainingImagesFile);
-    Eigen::MatrixXd trainingLabels = Helper::oneHotEncode(DataReader::readLableFile(traininglabelsFile), 10);
+    Eigen::MatrixXd trainingLabels = Helper::oneHotEncode(DataReader::readLableFile(traininglabelsFile), 10).transpose();
     Eigen::MatrixXd testImages = DataReader::readImageFile(testImagesFile);
-    Eigen::MatrixXd testLabels = Helper::oneHotEncode(DataReader::readLableFile(testlabelsFile), 10);
+    Eigen::MatrixXd testLabels = Helper::oneHotEncode(DataReader::readLableFile(testlabelsFile), 10).transpose();
 
     std::cout << trainingImages.rows() << ", " << trainingImages.cols() << std::endl;
-    std::cout << trainingLabels.size() << std::endl;
+    std::cout << trainingLabels.rows() << ", " << trainingLabels.cols() << std::endl;
     std::cout << testImages.rows() << ", " << testImages.cols() << std::endl;
-    std::cout << testLabels.size() << std::endl;
+    std::cout << testLabels.rows() << ", " << testLabels.cols() << std::endl;
 
-    double validationRatio = 0.9f;
-    int splitIndex = static_cast<int>(trainingImages.rows() * validationRatio);
+    double validationRatio = 0.90f;
+    int splitIndex = static_cast<int>(trainingImages.cols() * validationRatio);
 
     Network network = Network({784, 30, 10});
-    network.stochasticGradientDescent(trainingImages.topRows(splitIndex), trainingLabels.topRows(splitIndex), trainingImages.bottomRows(trainingImages.rows() - splitIndex), trainingLabels.bottomRows(trainingLabels.rows() - splitIndex), 50, 1000, 3.0f);
+    network.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), 30, 10, 3.0f);
+
+    int testCorrect = network.evaluate(testImages, testLabels);
+    std::cout << "On test data: " << testCorrect << " / " << testImages.cols() << std::endl;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
