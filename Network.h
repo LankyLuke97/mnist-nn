@@ -13,6 +13,10 @@ public:
 		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(Layer(layerStructure[i - 1], layerStructure[i]));
 	}
 
+	Network(std::vector<int> layerStructure, int weightInitialisationType) {
+		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(Layer(layerStructure[i - 1], layerStructure[i], weightInitialisationType));
+	}
+
 	std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> backPropagation(Eigen::MatrixXd trainingData, Eigen::MatrixXd oneHotEncodedLabels) {
 		/*
 		* trainingData is n*m, where m is the number of samples in the minibatch and n is the number of features
@@ -51,7 +55,7 @@ public:
 		* of activations, as we start with the input data
 		*/
 
-		Eigen::MatrixXd delta = (activations.back() - oneHotEncodedLabels).cwiseProduct(zs.back().unaryExpr<double(*)(double)>(&Helper::sigmoidPrime));
+		Eigen::MatrixXd delta = costQuadraticDerivative(activations.back(), oneHotEncodedLabels).cwiseProduct(zs.back().unaryExpr<double(*)(double)>(&Helper::sigmoidPrime));
 		nabla_b.reserve(layers.size());
 		nabla_w.reserve(layers.size());
 		nabla_b[nabla_b.size() - 1] = delta;
@@ -79,9 +83,12 @@ public:
 		return std::make_pair(nabla_b, nabla_w);
 	}
 
-	double calculateCost(Eigen::MatrixXd oneHotEncodedLabels, Eigen::MatrixXd predictions) {
-		predictions = Helper::applyRowWiseSoftmax(predictions);
-		return (oneHotEncodedLabels - predictions).array().square().sum() / (2 * predictions.rows());
+	Eigen::MatrixXd costCrossEntropyDerivative(Eigen::MatrixXd oneHotEncodedLabels, Eigen::MatrixXd predictions) {
+		return Eigen::MatrixXd::Zero(1,1);
+	}
+
+	Eigen::MatrixXd costQuadraticDerivative(Eigen::MatrixXd predictions, Eigen::MatrixXd oneHotEncodedLabels) {
+		return predictions - oneHotEncodedLabels;
 	}
 
 	int evaluate(Eigen::MatrixXd validationData, Eigen::MatrixXd validationLabels) {

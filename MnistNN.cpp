@@ -27,11 +27,23 @@ int main() {
     double validationRatio = 0.90f;
     int splitIndex = static_cast<int>(trainingImages.cols() * validationRatio);
 
-    Network network = Network({784, 30, 10});
-    network.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), 30, 10, 3.0f);
+    Network network30 = Network({784, 30, 10});
+    network30.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), 30, 10, 3.0f);
+    Network network100 = Network({ 784, 100, 10 });
+    network100.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), 30, 10, 3.0f);
+    Network network30_large = Network({ 784, 30, 10 }, 1);
+    network30_large.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), 30, 10, 3.0f);
+    Network network100_large = Network({ 784, 100, 10 }, 1);
+    network100_large.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), 30, 10, 3.0f);
 
-    int testCorrect = network.evaluate(testImages, testLabels);
-    std::cout << "On test data: " << testCorrect << " / " << testImages.cols() << std::endl;
+    int testCorrect30 = network30.evaluate(testImages, testLabels);
+    int testCorrect100 = network100.evaluate(testImages, testLabels);
+    int testCorrect30_large = network30_large.evaluate(testImages, testLabels);
+    int testCorrect100_large = network100_large.evaluate(testImages, testLabels);
+    std::cout << "On test data, 30 hidden neurons: " << testCorrect30 << " / " << testImages.cols() << std::endl;
+    std::cout << "On test data, 100 hidden neurons: " << testCorrect100 << " / " << testImages.cols() << std::endl;
+    std::cout << "On test data, 30 hidden neurons, large weight initialisation: " << testCorrect30_large << " / " << testImages.cols() << std::endl;
+    std::cout << "On test data, 100 hidden neurons, large weight initialisation: " << testCorrect100_large << " / " << testImages.cols() << std::endl;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
