@@ -5,11 +5,11 @@ C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\Helper.h(28,18): warning 
           [
               Derived=Eigen::Matrix<int,-1,1,0,-1,1>
           ]
-C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\Network.h(133,30): warning C4244: 'initializing': conversion from 'Eigen::Index' to 'int', possible loss of data
+C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\Network.h(137,30): warning C4244: 'initializing': conversion from 'Eigen::Index' to 'int', possible loss of data
 C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\MnistNN.cpp(12,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   Generating code
-  1 of 2831 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+  1 of 2834 functions (<0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    38 functions had inline decision re-evaluated but remain unchanged
+    105 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   MnistNN.vcxproj -> C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\x64\Release\MnistNN.exe

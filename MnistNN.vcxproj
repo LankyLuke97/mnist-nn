@@ -134,6 +134,7 @@
     <ClCompile Include="MnistNN.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Cost.h" />
     <ClInclude Include="DataReader.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="Layer.h" />

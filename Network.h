@@ -2,18 +2,22 @@
 #include <Eigen/Dense>
 #include <iostream>
 #include <vector>
+#include "Cost.h"
 #include "Helper.h"
 #include "Layer.h"
 
 class Network {
 public:
+	Cost cost;
+	double lambda = 0.0;
 	std::vector<Layer> layers;
 
-	Network(std::vector<int> layerStructure) {
+	Network(std::vector<int> layerStructure) : cost(0) {
 		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(Layer(layerStructure[i - 1], layerStructure[i]));
 	}
 
-	Network(std::vector<int> layerStructure, int weightInitialisationType) {
+	Network(std::vector<int> layerStructure, double lambda, int costType, int weightInitialisationType) : cost(costType) {
+		this->lambda = lambda;
 		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(Layer(layerStructure[i - 1], layerStructure[i], weightInitialisationType));
 	}
 
@@ -55,7 +59,7 @@ public:
 		* of activations, as we start with the input data
 		*/
 
-		Eigen::MatrixXd delta = costQuadraticDerivative(activations.back(), oneHotEncodedLabels).cwiseProduct(zs.back().unaryExpr<double(*)(double)>(&Helper::sigmoidPrime));
+		Eigen::MatrixXd delta = cost.delta(zs.back(), activations.back(), oneHotEncodedLabels);
 		nabla_b.reserve(layers.size());
 		nabla_w.reserve(layers.size());
 		nabla_b[nabla_b.size() - 1] = delta;
@@ -162,7 +166,7 @@ public:
 				Eigen::MatrixXd miniBatchData = trainingData(Eigen::all, miniBatchIndices);
 				Eigen::MatrixXd miniBatchLabels = trainingLabels(Eigen::all,miniBatchIndices);
 
-				updateMiniBatch(miniBatchData, miniBatchLabels, eta);
+				updateMiniBatch(miniBatchData, miniBatchLabels, eta, lambda, numberOfTrainingInputs);
 			}
 
 			int correct = evaluate(validationData, validationLabels);
@@ -170,7 +174,7 @@ public:
 		}
 	}
 
-	void updateMiniBatch(Eigen::MatrixXd trainingMiniBatch, Eigen::MatrixXd oneHotEncodedMiniBatchLabels, double eta) {
+	void updateMiniBatch(Eigen::MatrixXd trainingMiniBatch, Eigen::MatrixXd oneHotEncodedMiniBatchLabels, double eta, double lambda, int n) {
 		/*
 		* trainingMiniBatch is n*m, where m is the number of samples in the minibatch and n is the number of features
 		* oneHotEncodedMiniBatchLabels0 is m*10
@@ -185,7 +189,7 @@ public:
 
 		for(int i = 0; i < layers.size(); i++) {
 			layers[i].biases = layers[i].biases - ((eta / trainingMiniBatch.cols()) * nabla_b[i].rowwise().sum());
-			layers[i].weights = layers[i].weights - ((eta / trainingMiniBatch.cols()) * nabla_w[i]);
+			layers[i].weights = ((1 - eta * (lambda / n)) * layers[i].weights) - ((eta / trainingMiniBatch.cols()) * nabla_w[i]);
 		}
 	}
 };
