@@ -26,16 +26,40 @@ int main() {
 
     double validationRatio = 0.90f;
     int splitIndex = static_cast<int>(trainingImages.cols() * validationRatio);
+    int epochs = 200;
 
-    Network network30_2 = Network({784, 30, 10}, 2.0, 1, 0);
-    network30_2.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), 30, 10, 3.0f);
-    Network network100_2 = Network({ 784, 100, 10 }, 2.0, 1, 0);
-    network100_2.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), 30, 10, 3.0f);
-    Network network30_5 = Network({ 784, 30, 10 }, 5.0, 1, 0);
-    network30_5.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), 30, 10, 3.0f);
-    Network network100_5 = Network({ 784, 100, 10 }, 5.0, 1, 0);
-    network100_5.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), 30, 10, 3.0f);
+    std::vector<double> network30_2_trainingCost;
+    std::vector<double> network30_2_trainingAccuracy;
+    std::vector<double> network30_2_validationCost;
+    std::vector<double> network30_2_validationAccuracy;
 
+    Network network30_2 = Network({784, 30, 10}, 10, 2.0, 1, 0);
+    network30_2.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), epochs, 10, 3.0f, network30_2_trainingCost, network30_2_trainingAccuracy, network30_2_validationCost, network30_2_validationAccuracy);
+
+    std::vector<double> network100_2_trainingCost;
+    std::vector<double> network100_2_trainingAccuracy;
+    std::vector<double> network100_2_validationCost;
+    std::vector<double> network100_2_validationAccuracy;
+
+    Network network100_2 = Network({ 784, 100, 10 }, 10, 2.0, 1, 0);
+    network100_2.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), epochs, 10, 3.0f, network100_2_trainingCost, network100_2_trainingAccuracy, network100_2_validationCost, network100_2_validationAccuracy);
+
+    std::vector<double> network30_5_trainingCost;
+    std::vector<double> network30_5_trainingAccuracy;
+    std::vector<double> network30_5_validationCost;
+    std::vector<double> network30_5_validationAccuracy;
+
+    Network network30_5 = Network({ 784, 30, 10 }, 10, 5.0, 1, 0);
+    network30_5.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), epochs, 10, 3.0f, network30_5_trainingCost, network30_5_trainingAccuracy, network30_5_validationCost, network30_5_validationAccuracy);
+
+    std::vector<double> network100_5_trainingCost;
+    std::vector<double> network100_5_trainingAccuracy;
+    std::vector<double> network100_5_validationCost;
+    std::vector<double> network100_5_validationAccuracy;
+
+    Network network100_5 = Network({ 784, 100, 10 }, 10, 5.0, 1, 0);
+    network100_5.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), epochs, 10, 3.0f, network100_5_trainingCost, network100_5_trainingAccuracy, network100_5_validationCost, network100_5_validationAccuracy);
+    
     int testCorrect30_2 = network30_2.evaluate(testImages, testLabels);
     int testCorrect100_2 = network100_2.evaluate(testImages, testLabels);
     int testCorrect30_5= network30_5.evaluate(testImages, testLabels);
@@ -44,6 +68,8 @@ int main() {
     std::cout << "On test data, 100 hidden neurons, lambda = 2: " << testCorrect100_2 << " / " << testImages.cols() << std::endl;
     std::cout << "On test data, 30 hidden neurons, lambda = 5: " << testCorrect30_5 << " / " << testImages.cols() << std::endl;
     std::cout << "On test data, 100 hidden neurons, lambda = 5: " << testCorrect100_5 << " / " << testImages.cols() << std::endl;
+
+
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

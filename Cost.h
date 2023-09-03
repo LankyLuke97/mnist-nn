@@ -36,7 +36,7 @@ private:
 		Eigen::MatrixXd result = term1 + term2;
 		result = result.array().isNaN().select(0, result); // Replace NaN with 0
 
-		return result.sum();
+		return result.sum() / activations.cols();
 	}
 
 	Eigen::MatrixXd crossEntropyDelta(Eigen::MatrixXd zs, Eigen::MatrixXd activations, Eigen::MatrixXd labels) {
@@ -44,7 +44,7 @@ private:
 	}
 
 	double quadratic(Eigen::MatrixXd activations, Eigen::MatrixXd labels) {
-		return 0.5 * (activations - labels).squaredNorm();
+		return 0.5 * (activations - labels).squaredNorm() / activations.cols();
 	}
 
 	Eigen::MatrixXd quadraticDelta(Eigen::MatrixXd zs, Eigen::MatrixXd activations, Eigen::MatrixXd labels) {

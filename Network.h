@@ -1,6 +1,7 @@
 #pragma once
 #include <Eigen/Dense>
 #include <iostream>
+#include <numeric>
 #include <vector>
 #include "Cost.h"
 #include "Helper.h"
@@ -9,15 +10,20 @@
 class Network {
 public:
 	Cost cost;
+	int earlyStopThreshold = -1;
 	double lambda = 0.0;
 	std::vector<Layer> layers;
+
+	double bestAccuracy = 0.0;
+	std::vector<Layer> bestModel;
 
 	Network(std::vector<int> layerStructure) : cost(0) {
 		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(Layer(layerStructure[i - 1], layerStructure[i]));
 	}
 
-	Network(std::vector<int> layerStructure, double lambda, int costType, int weightInitialisationType) : cost(costType) {
+	Network(std::vector<int> layerStructure, int earlyStopThreshold, double lambda, int costType, int weightInitialisationType) : cost(costType) {
 		this->lambda = lambda;
+		this->earlyStopThreshold = earlyStopThreshold;
 		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(Layer(layerStructure[i - 1], layerStructure[i], weightInitialisationType));
 	}
 
@@ -95,14 +101,48 @@ public:
 		return predictions - oneHotEncodedLabels;
 	}
 
-	int evaluate(Eigen::MatrixXd validationData, Eigen::MatrixXd validationLabels) {
+	bool earlyStop(std::vector<double> accuracies) {
+		if(accuracies.size() < earlyStopThreshold) return false;
+
+#if __cplusplus >= 201703L // Check if C++17 or higher
+		// Use std::shuffle for C++17 and higher
+		double averageAccuracy = std::reduce(accuracies.end() - earlyStopThreshold, accuracies.end(), 0.0) / earlyStopThreshold;
+		double sum_of_squared_diff = std::reduce(accuracies.end() - earlyStopThreshold, accuracies.end(), 0.0,
+			[mean](double sum, double x) {
+				double diff = x - mean;
+				return sum + diff * diff;
+			}
+		);
+
+		double standardDeviation = std::sqrt(sum_of_squared_diff / earlyStopThreshold);
+#else
+		// Use std::random_shuffle for pre-C++17
+		double averageAccuracy = std::accumulate(accuracies.end() - earlyStopThreshold, accuracies.end(), 0.0) / earlyStopThreshold;
+		double sum_of_squared_diff = std::accumulate(accuracies.end() - earlyStopThreshold, accuracies.end(), 0.0,
+			[averageAccuracy](double sum, double x) {
+				double diff = x - averageAccuracy;
+				return sum + diff * diff;
+			}
+		);
+
+		// Calculate the standard deviation
+		double standardDeviation = std::sqrt(sum_of_squared_diff / earlyStopThreshold);
+#endif
+		if(accuracies.back() < averageAccuracy - standardDeviation || accuracies.back() < bestAccuracy - 3 * standardDeviation) {
+			std::cout << "Current accuracy: " << accuracies.back() << "\nBest accuracy: " << bestAccuracy << "\nAverage and std dev over last " << earlyStopThreshold << " evaluations: " << averageAccuracy << ", " << standardDeviation << std::endl;
+			return true;
+		}
+		return false;
+	}
+
+	int evaluate(Eigen::MatrixXd data, Eigen::MatrixXd labels) {
 		int correct = 0;
-		Eigen::MatrixXd predictions = forwardPass(validationData);
+		Eigen::MatrixXd predictions = forwardPass(data);
 
 		for(Eigen::Index i = 0; i < predictions.cols(); ++i) {
 			Eigen::Index labelIndex;
 			Eigen::Index predictionIndex;
-			validationLabels.col(i).maxCoeff(&labelIndex);
+			labels.col(i).maxCoeff(&labelIndex);
 			predictions.col(i).maxCoeff(&predictionIndex);
 
 			correct += 1 * (predictionIndex == labelIndex);
@@ -127,7 +167,7 @@ public:
 		return activations;
 	}
 
-	void stochasticGradientDescent(Eigen::MatrixXd trainingData, Eigen::MatrixXd trainingLabels, Eigen::MatrixXd validationData, Eigen::MatrixXd validationLabels, int epochs, int miniBatchSize, double eta) {
+	void stochasticGradientDescent(Eigen::MatrixXd trainingData, Eigen::MatrixXd trainingLabels, Eigen::MatrixXd validationData, Eigen::MatrixXd validationLabels, int epochs, int miniBatchSize, double eta, std::vector<double>& trainingCost, std::vector<double>& trainingAccuracy, std::vector<double>& evaluationCost, std::vector<double>& evaluationAccuracy ) {
 		/*
 		* trainingData is n*m, where m is number of samples and n is number of featurs - in this case, 784 * ~50000
 		* trainingLabels is 10*m
@@ -170,8 +210,37 @@ public:
 			}
 
 			int correct = evaluate(validationData, validationLabels);
-			std::cout << "Epoch " << j << ": " << correct << "/" << validationData.cols() << std::endl;
+			std::cout<< "Epoch " << j << ": " << correct << "/" << validationData.cols() << std::endl;
+
+			trainingCost.push_back(totalCost(trainingData, trainingLabels, lambda));
+			trainingAccuracy.push_back(evaluate(trainingData, trainingLabels));
+			evaluationCost.push_back(totalCost(validationData, validationLabels, lambda));
+			evaluationAccuracy.push_back(evaluate(validationData, validationLabels));
+
+			if(evaluationAccuracy.back() > bestAccuracy) {
+				bestAccuracy = evaluationAccuracy.back();
+				bestModel = layers;
+			}
+			//std::cout << "Cost on training data: " << trainingCost.back() << std::endl;
+			//std::cout << "Accuracy on training data: " << trainingAccuracy.back() << "/" << trainingData.cols() << std::endl;
+			//std::cout << "Cost on validation data: " << evaluationCost.back() << std::endl;
+			//std::cout << "Accuracy on validation data: " << evaluationAccuracy.back() << "/" << validationData.cols() << std::endl;
+
+			if(earlyStopThreshold > -1 && earlyStop(evaluationAccuracy)) {
+				std::cout << "Stopping early - accuracy on validation set stagnating. Resetting model weights and biases to best version." << std::endl;
+				return;
+			}
 		}
+	}
+
+	double totalCost(Eigen::MatrixXd data, Eigen::MatrixXd labels, double lambda) {
+		Eigen::MatrixXd activations = forwardPass(data);
+		double totalCost = cost.cost(activations, labels);
+		for(int i = 0; i < layers.size(); i++) {
+			totalCost += 0.5 * (lambda / data.cols()) * layers[i].weights.squaredNorm();
+		}
+
+		return totalCost;
 	}
 
 	void updateMiniBatch(Eigen::MatrixXd trainingMiniBatch, Eigen::MatrixXd oneHotEncodedMiniBatchLabels, double eta, double lambda, int n) {
