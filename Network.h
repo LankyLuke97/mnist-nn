@@ -10,8 +10,12 @@
 class Network {
 public:
 	Cost cost;
+	int stepsOnCurrentLearningRate = 0;
 	int earlyStopThreshold = -1;
+	double eta;
+	int etaReductionCount = 0;
 	double lambda = 0.0;
+	int learningSchedule;
 	std::vector<Layer> layers;
 
 	double bestAccuracy = 0.0;
@@ -130,7 +134,11 @@ public:
 #endif
 		if(accuracies.back() < averageAccuracy - standardDeviation || accuracies.back() < bestAccuracy - 3 * standardDeviation) {
 			std::cout << "Current accuracy: " << accuracies.back() << "\nBest accuracy: " << bestAccuracy << "\nAverage and std dev over last " << earlyStopThreshold << " evaluations: " << averageAccuracy << ", " << standardDeviation << std::endl;
-			return true;
+			eta /= 2;
+			stepsOnCurrentLearningRate = 0;
+			etaReductionCount++;
+
+			if(etaReductionCount > learningSchedule) return true;
 		}
 		return false;
 	}
@@ -167,13 +175,16 @@ public:
 		return activations;
 	}
 
-	void stochasticGradientDescent(Eigen::MatrixXd trainingData, Eigen::MatrixXd trainingLabels, Eigen::MatrixXd validationData, Eigen::MatrixXd validationLabels, int epochs, int miniBatchSize, double eta, std::vector<double>& trainingCost, std::vector<double>& trainingAccuracy, std::vector<double>& evaluationCost, std::vector<double>& evaluationAccuracy ) {
+	void stochasticGradientDescent(Eigen::MatrixXd trainingData, Eigen::MatrixXd trainingLabels, Eigen::MatrixXd validationData, Eigen::MatrixXd validationLabels, int epochs, int miniBatchSize, double learningRate, int learningRateSchedule, std::vector<double>& trainingCost, std::vector<double>& trainingAccuracy, std::vector<double>& evaluationCost, std::vector<double>& evaluationAccuracy ) {
 		/*
 		* trainingData is n*m, where m is number of samples and n is number of featurs - in this case, 784 * ~50000
 		* trainingLabels is 10*m
 		* validationData is n*k, where k is the number of samples in the validation set - in this case 784 * ~10000
 		* validationLabels is 10*k
 		*/
+		eta = learningRate;
+		learningSchedule = learningRateSchedule;
+
 		int numberOfTrainingInputs = trainingData.cols();
 		for(int j = 0; j < epochs; j++) {
 			std::vector<int> shuffledIndeces(numberOfTrainingInputs);
@@ -226,10 +237,12 @@ public:
 			//std::cout << "Cost on validation data: " << evaluationCost.back() << std::endl;
 			//std::cout << "Accuracy on validation data: " << evaluationAccuracy.back() << "/" << validationData.cols() << std::endl;
 
-			if(earlyStopThreshold > -1 && earlyStop(evaluationAccuracy)) {
+			if(earlyStopThreshold > -1 && stepsOnCurrentLearningRate > earlyStopThreshold && earlyStop(evaluationAccuracy)) {
 				std::cout << "Stopping early - accuracy on validation set stagnating. Resetting model weights and biases to best version." << std::endl;
 				return;
 			}
+
+			stepsOnCurrentLearningRate++;
 		}
 	}
 
