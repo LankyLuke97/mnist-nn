@@ -22,13 +22,13 @@ public:
 	std::vector<Layer> bestModel;
 
 	Network(std::vector<int> layerStructure) : cost(0) {
-		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(Layer(layerStructure[i - 1], layerStructure[i]));
+		//for(int i = 1; i < layerStructure.size(); i++) layers.push_back(Layer(layerStructure[i - 1], layerStructure[i]));
 	}
 
 	Network(std::vector<int> layerStructure, int earlyStopThreshold, double lambda, int costType, int weightInitialisationType) : cost(costType) {
 		this->lambda = lambda;
 		this->earlyStopThreshold = earlyStopThreshold;
-		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(Layer(layerStructure[i - 1], layerStructure[i], weightInitialisationType));
+		//for(int i = 1; i < layerStructure.size(); i++) layers.push_back(Layer(layerStructure[i - 1], layerStructure[i], weightInitialisationType));
 	}
 
 	std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> backPropagation(Eigen::MatrixXd trainingData, Eigen::MatrixXd oneHotEncodedLabels) {

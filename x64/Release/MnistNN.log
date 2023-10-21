@@ -6,10 +6,37 @@ C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\Helper.h(28,18): warning 
               Derived=Eigen::Matrix<int,-1,1,0,-1,1>
           ]
 C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\Network.h(188,30): warning C4244: 'initializing': conversion from 'Eigen::Index' to 'int', possible loss of data
-C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\MnistNN.cpp(12,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-  Generating code
-  2 of 3384 functions (<0.1%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    39 functions had inline decision re-evaluated but remain unchanged
-  Finished generating code
-  MnistNN.vcxproj -> C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\x64\Release\MnistNN.exe
+C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\MnistNN.cpp(14,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\lhowd\Documents\Studio\eigen-3.4.0\Eigen\src\Core\DenseCoeffsBase.h(408,7): error C2338: static_assert failed: 'THE_BRACKET_OPERATOR_IS_ONLY_FOR_VECTORS__USE_THE_PARENTHESIS_OPERATOR_INSTEAD'
+C:\Users\lhowd\Documents\Studio\eigen-3.4.0\Eigen\src\Core\DenseCoeffsBase.h(406,5): message : while compiling class template member function 'double &Eigen::DenseCoeffsBase<Derived,1>::operator [](Eigen::Index)'
+          with
+          [
+              Derived=Eigen::Matrix<double,-1,-1,0,-1,-1>
+          ]
+C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\ConvLayer.h(35,141): message : see the first reference to 'Eigen::DenseCoeffsBase<Derived,1>::operator []' in 'ConvLayer::preprocessInput'
+          with
+          [
+              Derived=Eigen::Matrix<double,-1,-1,0,-1,-1>
+          ]
+C:\Users\lhowd\Documents\Studio\eigen-3.4.0\Eigen\src\Core\DenseCoeffsBase.h(556,12): message : see reference to class template instantiation 'Eigen::DenseCoeffsBase<Derived,1>' being compiled
+          with
+          [
+              Derived=Eigen::Matrix<double,-1,-1,0,-1,-1>
+          ]
+C:\Users\lhowd\Documents\Studio\eigen-3.4.0\Eigen\src\Core\DenseBase.h(43,12): message : see reference to class template instantiation 'Eigen::DenseCoeffsBase<Derived,3>' being compiled
+          with
+          [
+              Derived=Eigen::Matrix<double,-1,-1,0,-1,-1>
+          ]
+C:\Users\lhowd\Documents\Studio\eigen-3.4.0\Eigen\src\Core\MatrixBase.h(49,12): message : see reference to class template instantiation 'Eigen::DenseBase<Derived>' being compiled
+          with
+          [
+              Derived=Eigen::Matrix<double,-1,-1,0,-1,-1>
+          ]
+C:\Users\lhowd\Documents\Studio\eigen-3.4.0\Eigen\src\Core\PlainObjectBase.h(98,67): message : see reference to class template instantiation 'Eigen::MatrixBase<Derived>' being compiled
+          with
+          [
+              Derived=Eigen::Matrix<double,-1,-1,0,-1,-1>
+          ]
+C:\Users\lhowd\Documents\Studio\eigen-3.4.0\Eigen\src\Core\Matrix.h(179,12): message : see reference to class template instantiation 'Eigen::PlainObjectBase<Eigen::Matrix<double,-1,-1,0,-1,-1>>' being compiled
+C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\DataReader.h(10): message : see reference to class template instantiation 'Eigen::Matrix<double,-1,-1,0,-1,-1>' being compiled

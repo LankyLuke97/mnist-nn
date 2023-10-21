@@ -5,7 +5,6 @@ C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\Helper.h(28,18): warning 
           [
               Derived=Eigen::Matrix<int,-1,1,0,-1,1>
           ]
-C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\Network.h(128,30): warning C4244: 'initializing': conversion from 'Eigen::Index' to 'int', possible loss of data
-C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\MnistNN.cpp(12,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\MnistNN.cpp(44,33): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\Network.h(188,30): warning C4244: 'initializing': conversion from 'Eigen::Index' to 'int', possible loss of data
+C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\MnistNN.cpp(14,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   MnistNN.vcxproj -> C:\Users\lhowd\Documents\Studio\NeuralNetworks\MnistNN\x64\Debug\MnistNN.exe

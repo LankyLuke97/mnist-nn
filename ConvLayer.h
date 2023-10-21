@@ -2,43 +2,17 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <vector>
+#include "Layer.h"
 #include "Neuron.h"
 #include "Helper.h"
 
-class ConvLayer {
+class ConvLayer : Layer {
 public:
 	int numberFeatures, stride, windowHeight, windowWidth;
-	Eigen::VectorXd biases;
-	Eigen::MatrixXd weights;
 
 	ConvLayer(int numberFeatures, int stride, int windowHeight, int windowWidth) : numberFeatures(numberFeatures), stride(stride), windowHeight(windowHeight), windowWidth(windowWidth) {
 		biases = Eigen::VectorXd::Random(numberFeatures);
 		weights = Eigen::MatrixXd::Random(numberFeatures, windowHeight * windowWidth) / sqrt(windowHeight * windowWidth);
-	}
-
-	Eigen::MatrixXd preprocessInput(Eigen::MatrixXd input) {
-		int outputRows = ((input.rows() - windowHeight) / stride) + 1;
-		int outputCols = ((input.cols() - windowWidth) / stride) + 1;
-
-		Eigen::MatrixXd result(windowHeight * windowWidth, outputRows * outputCols);
-
-		for(int i = 0; i < outputRows; ++i) {
-			for(int j = 0; j < outputCols; ++j) {
-				int startRow = i * stride;
-				int startCol = j * stride;
-
-				int colOffset = i * outputCols + j;
-
-				Eigen::Map<const Eigen::MatrixXd> window(
-					input.block(startRow, startCol, windowHeight, windowWidth).data(),
-					windowHeight * windowWidth, 1
-				);
-
-				result.col(colOffset) = window;
-			}
-		}
-
-		return result;
 	}
 
 	Eigen::MatrixXd feedForward(Eigen::MatrixXd input) {

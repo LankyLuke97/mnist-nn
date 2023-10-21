@@ -8,9 +8,11 @@
 #include "Helper.h"
 #include "Network.h"
 
+#include "ConvLayer.h"
+
 int main() {
     srand(time(0));
-    std::string trainingImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-images.idx3-ubyte";
+    /*std::string trainingImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-images.idx3-ubyte";
     std::string traininglabelsFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-labels.idx1-ubyte";
     std::string testImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\t10k-images.idx3-ubyte";
     std::string testlabelsFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\t10k-labels.idx1-ubyte";
@@ -24,14 +26,37 @@ int main() {
     std::cout << testImages.rows() << ", " << testImages.cols() << std::endl;
     std::cout << testLabels.rows() << ", " << testLabels.cols() << std::endl;
 
-    double validationRatio = 0.90f;
+    Eigen::MatrixXd reshapedTrainingImages = Helper::reshapeForConvolution(trainingImages, 1, 2, 2);
+    Eigen::MatrixXd reshapedTestImages = Helper::reshapeForConvolution(testImages, 1, 2, 2);*/
+
+    ConvLayer layer = ConvLayer(3, 1, 2, 2);
+
+    Eigen::MatrixXd test(3, 16);
+    test << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+        101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116,
+        201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216;
+    Eigen::MatrixXd processedTest = Helper::convolveInput(test, 1, 2, 2, 4, 4);
+    std::cout << "Preprocessed Matrix:\n" << processedTest << std::endl;
+
+    /*double validationRatio = 0.90f;
     int splitIndex = static_cast<int>(trainingImages.cols() * validationRatio);
     int epochs = 1000;
     int miniBatchSize = 10;
     float learningRate = 3.0f;
-    int learningRateSchedule = 4;
+    int learningRateSchedule = 6;
 
-    std::vector<double> network30_2_trainingCost;
+    std::vector<double> convolutionalNetwork_trainingCost;
+    std::vector<double> convolutionalNetwork_trainingAccuracy;
+    std::vector<double> convolutionalNetwork_validationCost;
+    std::vector<double> convolutionalNetwork_validationAccuracy;
+
+    Network convolutionalNetwork = Network({ 784, 100, 10 }, 10, 2.0, 1, 0);
+    convolutionalNetwork.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), epochs, miniBatchSize, learningRate, learningRateSchedule, convolutionalNetwork_trainingCost, convolutionalNetwork_trainingAccuracy, convolutionalNetwork_validationCost, convolutionalNetwork_validationAccuracy);
+
+    int testCorrect30_2 = convolutionalNetwork.evaluate(testImages, testLabels);
+    std::cout << "On test data, 30 hidden neurons, lambda = 2: " << testCorrect30_2 << " / " << testImages.cols() << std::endl;*/
+
+    /*std::vector<double> network30_2_trainingCost;
     std::vector<double> network30_2_trainingAccuracy;
     std::vector<double> network30_2_validationCost;
     std::vector<double> network30_2_validationAccuracy;
@@ -40,7 +65,7 @@ int main() {
     network30_2.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), epochs, miniBatchSize, learningRate, learningRateSchedule, network30_2_trainingCost, network30_2_trainingAccuracy, network30_2_validationCost, network30_2_validationAccuracy);
 
     int testCorrect30_2 = network30_2.evaluate(testImages, testLabels);
-    std::cout << "On test data, 30 hidden neurons, lambda = 2: " << testCorrect30_2 << " / " << testImages.cols() << std::endl;
+    std::cout << "On test data, 30 hidden neurons, lambda = 2: " << testCorrect30_2 << " / " << testImages.cols() << std::endl;*/
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
