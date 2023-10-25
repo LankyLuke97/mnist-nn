@@ -37,31 +37,34 @@ public:
 	}
 
 	static Eigen::MatrixXd convolveInput(Eigen::MatrixXd input, int stride, int windowHeight, int windowWidth, int origInputHeight, int origInputWidth) {
+		int extra = stride > 1 ? 1 : 0;
 		int outputRows = ((origInputHeight - windowHeight) / stride) + 1;
 		int outputCols = ((origInputWidth - windowWidth) / stride) + 1;
+
+		//std::cout << "outputRows: " << outputRows << ", outputCols: " << outputCols << std::endl;
 
 		Eigen::MatrixXd result(windowHeight * windowWidth, outputRows * outputCols * input.rows());
 		int offset = 0;
 
 		for(int rowCount = 0; rowCount < input.rows(); rowCount++) {
 			Eigen::RowVectorXd row = input.row(rowCount);
-			std::cout << "Row size: " << row.cols() << std::endl;
-			for(int _y = 0; _y < outputRows; _y += stride) {
-				for(int _x = 0; _x < outputCols; _x += stride) {
+			//std::cout << "Row size: " << row.cols() << std::endl;
+			for(int _y = 0; _y + windowHeight <= origInputHeight; _y += stride) {
+				for(int _x = 0; _x + windowWidth <= origInputWidth; _x += stride) {
 					Eigen::VectorXd window(windowWidth * windowHeight);
 					int windowIdx = 0;
 
-					for(int j = 0; j < windowHeight; j += stride) {
-						for(int i = 0; i < windowWidth; i += stride) {
-							std::cout << "_y: " << _y << ", _x: " << _x << ", j: " << j << ", i: " << i << ", index: " << row((_y * origInputWidth) + _x + (j * origInputWidth) + i) << std::endl;
+					for(int j = 0; j < windowHeight; j++) {
+						for(int i = 0; i < windowWidth; i++) {
+							//std::cout << "_y: " << _y << ", _x: " << _x << ", j: " << j << ", i: " << i << ", index: " << row((_y * origInputWidth) + _x + (j * origInputWidth) + i) << std::endl;
 							window(windowIdx++) = row((_y * origInputWidth) + _x + (j * origInputWidth) + i);
 						}
 					}
 
 					result.col(offset++) = window;
-					std::cout << "Shifting window right" << std::endl;
+					//std::cout << "Shifting window right" << std::endl;
 				}
-				std::cout << "Shifting window down" << std::endl;
+				//std::cout << "Shifting window down" << std::endl;
 			}
 		}
 

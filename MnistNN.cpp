@@ -1,6 +1,7 @@
 // MnistNN.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+#include <chrono>
 #include <ctime>
 #include <Eigen/Dense>
 #include <iostream>
@@ -12,13 +13,13 @@
 
 int main() {
     srand(time(0));
-    /*std::string trainingImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-images.idx3-ubyte";
+    std::string trainingImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-images.idx3-ubyte";
     std::string traininglabelsFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-labels.idx1-ubyte";
     std::string testImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\t10k-images.idx3-ubyte";
     std::string testlabelsFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\t10k-labels.idx1-ubyte";
-    Eigen::MatrixXd trainingImages = DataReader::readImageFile(trainingImagesFile);
+    Eigen::MatrixXd trainingImages = DataReader::readImageFile(trainingImagesFile).transpose();
     Eigen::MatrixXd trainingLabels = Helper::oneHotEncode(DataReader::readLableFile(traininglabelsFile), 10).transpose();
-    Eigen::MatrixXd testImages = DataReader::readImageFile(testImagesFile);
+    Eigen::MatrixXd testImages = DataReader::readImageFile(testImagesFile).transpose();
     Eigen::MatrixXd testLabels = Helper::oneHotEncode(DataReader::readLableFile(testlabelsFile), 10).transpose();
 
     std::cout << trainingImages.rows() << ", " << trainingImages.cols() << std::endl;
@@ -26,17 +27,33 @@ int main() {
     std::cout << testImages.rows() << ", " << testImages.cols() << std::endl;
     std::cout << testLabels.rows() << ", " << testLabels.cols() << std::endl;
 
-    Eigen::MatrixXd reshapedTrainingImages = Helper::reshapeForConvolution(trainingImages, 1, 2, 2);
-    Eigen::MatrixXd reshapedTestImages = Helper::reshapeForConvolution(testImages, 1, 2, 2);*/
+    auto start = std::chrono::high_resolution_clock::now();
+
+    Eigen::MatrixXd reshapedTrainingImages = Helper::convolveInput(trainingImages, 1, 5, 5, 28, 28);
+
+    auto stop = std::chrono::high_resolution_clock::now();
+    std::cout << "Convolved Matrix:\n" << reshapedTrainingImages.rows() << "x" << reshapedTrainingImages.cols() << "\nTook " << (std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count()) << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+
+    Eigen::MatrixXd reshapedTestImages = Helper::convolveInput(testImages, 1, 5, 5, 28, 28);
+
+    stop = std::chrono::high_resolution_clock::now();
+    std::cout << "Convolved Matrix:\n" << reshapedTestImages.rows() << "x" << reshapedTestImages.cols() << "\nTook " << (std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count()) << std::endl;
 
     ConvLayer layer = ConvLayer(3, 1, 2, 2);
 
-    Eigen::MatrixXd test(3, 16);
+    /*Eigen::MatrixXd test(3, 16);
     test << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
         101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116,
         201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216;
-    Eigen::MatrixXd processedTest = Helper::convolveInput(test, 1, 2, 2, 4, 4);
-    std::cout << "Preprocessed Matrix:\n" << processedTest << std::endl;
+    Eigen::MatrixXd processedTest = Helper::convolveInput(test, 1, 3, 3, 4, 4);
+
+    std::cout << "Processed test: \n" << processedTest << std::endl;
+
+    processedTest = Helper::convolveInput(test, 2, 2, 2, 4, 4);
+
+    std::cout << "Processed test: \n" << processedTest << std::endl;
 
     /*double validationRatio = 0.90f;
     int splitIndex = static_cast<int>(trainingImages.cols() * validationRatio);

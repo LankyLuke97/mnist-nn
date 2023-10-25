@@ -8,8 +8,9 @@ class PoolingLayer : Layer {
 		std::vector<Eigen::MatrixXd> pooled = std::vector<Eigen::MatrixXd>(_input.size());
 		
 		for(Eigen::MatrixXd input : _input) {
-			int outputRows = ((input.rows() - windowHeight) / stride) + 1;
-			int outputCols = ((input.cols() - windowWidth) / stride) + 1;
+			int extra = stride > 1 ? 1 : 0;
+			int outputRows = ((input.rows() - windowHeight) / stride) + 1 + extra;
+			int outputCols = ((input.cols() - windowWidth) / stride) + 1 + extra;
 
 			Eigen::MatrixXd result(windowHeight * windowWidth, outputRows * outputCols);
 
