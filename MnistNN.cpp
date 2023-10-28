@@ -10,10 +10,11 @@
 #include "Network.h"
 
 #include "ConvLayer.h"
+#include "PoolingLayer.h"
 
 int main() {
     srand(time(0));
-    std::string trainingImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-images.idx3-ubyte";
+    /*std::string trainingImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-images.idx3-ubyte";
     std::string traininglabelsFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-labels.idx1-ubyte";
     std::string testImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\t10k-images.idx3-ubyte";
     std::string testlabelsFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\t10k-labels.idx1-ubyte";
@@ -41,9 +42,10 @@ int main() {
     stop = std::chrono::high_resolution_clock::now();
     std::cout << "Convolved Matrix:\n" << reshapedTestImages.rows() << "x" << reshapedTestImages.cols() << "\nTook " << (std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count()) << std::endl;
 
-    ConvLayer layer = ConvLayer(3, 1, 2, 2);
+    ConvLayer layer = ConvLayer(3, 1, 2, 2);*/
+    PoolingLayer pool = PoolingLayer();
 
-    /*Eigen::MatrixXd test(3, 16);
+    Eigen::MatrixXd test(3, 16);
     test << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
         101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116,
         201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216;
@@ -54,6 +56,11 @@ int main() {
     processedTest = Helper::convolveInput(test, 2, 2, 2, 4, 4);
 
     std::cout << "Processed test: \n" << processedTest << std::endl;
+
+    std::vector<Eigen::MatrixXd> pooled = pool.feedForward(std::vector<Eigen::MatrixXd> {test});
+
+
+    std::cout << "Pooled test: \n" << pooled[0] << std::endl;
 
     /*double validationRatio = 0.90f;
     int splitIndex = static_cast<int>(trainingImages.cols() * validationRatio);

@@ -1,36 +1,25 @@
 #pragma once
+#include <cmath>
 #include "Layer.h"
+#include "Helper.h"
 
 class PoolingLayer : Layer {
+public:
 	int numberFeatures, stride, windowHeight, windowWidth;	
 
 	std::vector<Eigen::MatrixXd> feedForward(std::vector<Eigen::MatrixXd> _input) {
-		std::vector<Eigen::MatrixXd> pooled = std::vector<Eigen::MatrixXd>(_input.size());
+		std::vector<Eigen::MatrixXd> pooled;
+		pooled.reserve(_input.size());
 		
 		for(Eigen::MatrixXd input : _input) {
-			int extra = stride > 1 ? 1 : 0;
-			int outputRows = ((input.rows() - windowHeight) / stride) + 1 + extra;
-			int outputCols = ((input.cols() - windowWidth) / stride) + 1 + extra;
+			int dim = std::sqrt(input.cols());
+			int numInputs = input.rows();
+			Eigen::MatrixXd convolved = Helper::convolveInput(input, 2, 2, 2, dim, dim);
 
-			Eigen::MatrixXd result(windowHeight * windowWidth, outputRows * outputCols);
+			//Currently just max pooling
+			Eigen::MatrixXd maxConvolved = convolved.colwise().maxCoeff().reshaped<Eigen::RowMajor>(numInputs, convolved.cols() / numInputs);
 
-			for(int i = 0; i < outputRows; ++i) {
-				for(int j = 0; j < outputCols; ++j) {
-					int startRow = i * stride;
-					int startCol = j * stride;
-
-					int colOffset = i * outputCols + j;
-
-					Eigen::Map<const Eigen::MatrixXd> window(
-						input.block(startRow, startCol, windowHeight, windowWidth).data(),
-						windowHeight * windowWidth, 1
-					);
-
-					result.col(colOffset) = window;
-				}
-			}
-
-			pooled.push_back(result);
+			pooled.push_back(maxConvolved);
 		}
 
 		return pooled;
