@@ -62,6 +62,14 @@ int main() {
 
     std::cout << "Pooled test: \n" << pooled[0] << std::endl;
 
+    Eigen::MatrixXd additionTest(2, 3);
+    additionTest << 1, 2, 3,
+        11, 12, 13;
+    Eigen::VectorXd add(2);
+    add << 5, 10;
+
+    std::cout << "Added: \n" << (additionTest.colwise() + add) << std::endl;
+
     /*double validationRatio = 0.90f;
     int splitIndex = static_cast<int>(trainingImages.cols() * validationRatio);
     int epochs = 1000;
