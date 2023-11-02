@@ -10,11 +10,12 @@
 #include "Network.h"
 
 #include "ConvLayer.h"
+#include "FullyConnectedLayer.h"
 #include "PoolingLayer.h"
 
 int main() {
     srand(time(0));
-    /*std::string trainingImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-images.idx3-ubyte";
+    std::string trainingImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-images.idx3-ubyte";
     std::string traininglabelsFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-labels.idx1-ubyte";
     std::string testImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\t10k-images.idx3-ubyte";
     std::string testlabelsFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\t10k-labels.idx1-ubyte";
@@ -28,7 +29,7 @@ int main() {
     std::cout << testImages.rows() << ", " << testImages.cols() << std::endl;
     std::cout << testLabels.rows() << ", " << testLabels.cols() << std::endl;
 
-    auto start = std::chrono::high_resolution_clock::now();
+    /*auto start = std::chrono::high_resolution_clock::now();
 
     Eigen::MatrixXd reshapedTrainingImages = Helper::convolveInput(trainingImages, 1, 5, 5, 28, 28);
 
@@ -41,9 +42,8 @@ int main() {
 
     stop = std::chrono::high_resolution_clock::now();
     std::cout << "Convolved Matrix:\n" << reshapedTestImages.rows() << "x" << reshapedTestImages.cols() << "\nTook " << (std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count()) << std::endl;
-
-    ConvLayer layer = ConvLayer(3, 1, 2, 2);*/
-    PoolingLayer pool = PoolingLayer();
+    */
+    PoolingLayer pool = PoolingLayer(2, 2, 2);
 
     Eigen::MatrixXd test(3, 16);
     test << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
@@ -57,10 +57,10 @@ int main() {
 
     std::cout << "Processed test: \n" << processedTest << std::endl;
 
-    std::vector<Eigen::MatrixXd> pooled = pool.feedForward(std::vector<Eigen::MatrixXd> {test});
+    std::vector<Eigen::MatrixXd> processedPooled = pool.feedForward(std::vector<Eigen::MatrixXd> {test});
 
 
-    std::cout << "Pooled test: \n" << pooled[0] << std::endl;
+    std::cout << "Pooled test: \n" << processedPooled[0] << std::endl;
 
     Eigen::MatrixXd additionTest(2, 3);
     additionTest << 1, 2, 3,
@@ -69,6 +69,34 @@ int main() {
     add << 5, 10;
 
     std::cout << "Added: \n" << (additionTest.colwise() + add) << std::endl;
+
+    ConvLayer testConv = ConvLayer(20, 1, 5, 5);
+    FullyConnectedLayer testConnected = FullyConnectedLayer(2880, 100);
+    PoolingLayer testPool = PoolingLayer(2, 2, 2);
+    std::vector<Eigen::MatrixXd> input {trainingImages};
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    std::vector<Eigen::MatrixXd> mapped = testConv.feedForward(input);
+    std::vector<Eigen::MatrixXd> pooled = testPool.feedForward(mapped);
+
+    Eigen::MatrixXd pooledFlattened(pooled[0].rows(), pooled.size() * pooled[0].cols());
+    int colOffset = pooled[0].cols();
+
+    for(int i = 0; i < pooled.size(); i++) {
+        pooledFlattened.col(colOffset * i) = pooled[i];
+    }
+
+    Eigen::MatrixXd output = testConnected.feedForward(pooledFlattened);
+
+    auto stop = std::chrono::high_resolution_clock::now();
+
+    std::cout << "Process took: \n" << (std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count()) << std::endl;
+    std::cout << "Shape of pooled: " << pooled.size() << "x" << pooled[0].rows() << "x" << pooled[0].cols() << std::endl;
+    std::cout << "Shape of pooledFlattened: " << pooledFlattened.rows() << "x" << pooledFlattened.cols() << std::endl;
+    std::cout << "Shape of output: " << output.rows() << "x" << output.cols() << std::endl;
+
+    std::cout << "Now, how long does it take with different batch sizes?" << std::endl;
 
     /*double validationRatio = 0.90f;
     int splitIndex = static_cast<int>(trainingImages.cols() * validationRatio);
