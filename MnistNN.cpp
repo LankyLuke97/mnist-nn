@@ -73,30 +73,45 @@ int main() {
     ConvLayer testConv = ConvLayer(20, 1, 5, 5);
     FullyConnectedLayer testConnected = FullyConnectedLayer(2880, 100);
     PoolingLayer testPool = PoolingLayer(2, 2, 2);
-    std::vector<Eigen::MatrixXd> input {trainingImages};
 
-    auto start = std::chrono::high_resolution_clock::now();
+    std::vector<int> batchSizes = { 1, 10, 100, 1000, 10000 };
+    std::vector<Eigen::MatrixXd> input;
+    std::vector<Eigen::MatrixXd> mapped;
+    std::vector<Eigen::MatrixXd> pooled;
+    Eigen::MatrixXd pooledFlattened;
+    Eigen::MatrixXd output;
 
-    std::vector<Eigen::MatrixXd> mapped = testConv.feedForward(input);
-    std::vector<Eigen::MatrixXd> pooled = testPool.feedForward(mapped);
+    for(int batchSize : batchSizes) {
+        auto start = std::chrono::high_resolution_clock::now();
 
-    Eigen::MatrixXd pooledFlattened(pooled[0].rows(), pooled.size() * pooled[0].cols());
-    int colOffset = pooled[0].cols();
+        for(int i = 0; i < trainingImages.rows(); i += batchSize) {
+            input = { trainingImages(Eigen::seqN(i, batchSize), Eigen::all) };
 
-    for(int i = 0; i < pooled.size(); i++) {
-        pooledFlattened.col(colOffset * i) = pooled[i];
+            mapped = testConv.feedForward(input);
+            pooled = testPool.feedForward(mapped);
+
+            pooledFlattened.resize(batchSize, pooled.size() * pooled[0].cols());
+            int colOffset = pooled[0].cols();
+
+            for(int i = 0; i < pooled.size(); i++) {
+                pooledFlattened.middleCols(colOffset * i, colOffset) = pooled[i];
+            }
+
+            output = testConnected.feedForward(pooledFlattened.transpose()); // ---- this transpose needs to go - it's because I had to reverse the matrices elsewhere for the maths to work
+        }
+
+        auto stop = std::chrono::high_resolution_clock::now();
+
+        std::cout << "Process with batch size " << batchSize << " took: " << (std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count()) << " milliseconds" << std::endl;
+        std::cout << "Shape of pooled: " << pooled.size() << "x" << pooled[0].rows() << "x" << pooled[0].cols() << std::endl;
+        std::cout << "Shape of pooledFlattened: " << pooledFlattened.rows() << "x" << pooledFlattened.cols() << std::endl;
+        std::cout << "Shape of output: " << output.rows() << "x" << output.cols() << std::endl;
     }
 
-    Eigen::MatrixXd output = testConnected.feedForward(pooledFlattened);
-
-    auto stop = std::chrono::high_resolution_clock::now();
-
-    std::cout << "Process took: \n" << (std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count()) << std::endl;
-    std::cout << "Shape of pooled: " << pooled.size() << "x" << pooled[0].rows() << "x" << pooled[0].cols() << std::endl;
-    std::cout << "Shape of pooledFlattened: " << pooledFlattened.rows() << "x" << pooledFlattened.cols() << std::endl;
-    std::cout << "Shape of output: " << output.rows() << "x" << output.cols() << std::endl;
-
-    std::cout << "Now, how long does it take with different batch sizes?" << std::endl;
+    std::cout << "Is it quicker, since I know the size of the matrices at each level,\n\
+                to precompute the indeces needed to slice the incoming matrix into its\n\
+                convolved version, rather than looping each time? I suspect yes. Explore\n\
+                this next." << std::endl;
 
     /*double validationRatio = 0.90f;
     int splitIndex = static_cast<int>(trainingImages.cols() * validationRatio);

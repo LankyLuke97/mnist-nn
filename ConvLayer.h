@@ -32,17 +32,17 @@ public:
 		mapped.reserve(numberFeatures * _input.size());
 
 		for(Eigen::MatrixXd input : _input) {
-			std::cout << "New input for feature mapping" << std::endl;
+			//std::cout << "New input for feature mapping" << std::endl;
 			int dim = std::sqrt(input.cols());
 			int numInputs = input.rows();
-			std::cout << "Convolving" << std::endl;
+			//std::cout << "Convolving" << std::endl;
 			Eigen::MatrixXd convolved = Helper::convolveInput(input, stride, windowHeight, windowWidth, dim, dim); // dim, dim only works for squares
-			std::cout << "Convolving finished" << std::endl;
+			//std::cout << "Convolving finished" << std::endl;
 
 			Eigen::MatrixXd featureMapped = (weights * convolved).colwise() + biases;
 
 			for(int i = 0; i < featureMapped.rows(); i++) {
-				std::cout << "Feature " << i << std::endl;
+				//std::cout << "Feature " << i << std::endl;
 				mapped.push_back(featureMapped.row(i).reshaped<Eigen::RowMajor>(numInputs, featureMapped.cols() / numInputs));
 			}
 		}

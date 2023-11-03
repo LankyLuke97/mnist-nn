@@ -29,6 +29,8 @@ public:
 		assert(input.rows() == weights.cols());
 		assert(biases.rows() == weights.rows());
 
+		//std::cout << input.rows() << ", " << input.cols() << ", " << weights.rows() << ", " << weights.cols() << ", " << biases.rows() << ", " << biases.cols() << std::endl;
+
 		return (weights * input).colwise() + biases;
 	}
 
