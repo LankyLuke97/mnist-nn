@@ -74,12 +74,14 @@ int main() {
     FullyConnectedLayer testConnected = FullyConnectedLayer(2880, 100);
     PoolingLayer testPool = PoolingLayer(2, 2, 2);
 
-    std::vector<int> batchSizes = { 1, 10, 100, 1000, 10000 };
+    std::vector<int> batchSizes = { 1, 10, 100 };
     std::vector<Eigen::MatrixXd> input;
     std::vector<Eigen::MatrixXd> mapped;
     std::vector<Eigen::MatrixXd> pooled;
     Eigen::MatrixXd pooledFlattened;
     Eigen::MatrixXd output;
+
+    Helper::displayCharacter(Eigen::VectorXd(trainingImages.row(50)), 28);
 
     for(int batchSize : batchSizes) {
         auto start = std::chrono::high_resolution_clock::now();

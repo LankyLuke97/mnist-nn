@@ -70,4 +70,14 @@ public:
 
 		return result;
 	}
+
+	static void displayCharacter(const Eigen::VectorXd& character, int charSize) {
+		const char intensityChars[] = { ' ', '.', ':', '-', '=', '+', '*', '#', '%', '@' };
+		int i = 0;
+
+		for(const auto& val : character) {
+			std::cout << intensityChars[int(val / 0.1)];
+			if(++i % charSize == 0) std::cout << std::endl;
+		}
+	}
 };
