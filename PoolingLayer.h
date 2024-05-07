@@ -11,7 +11,7 @@ public:
 		
 	}
 
-	std::vector<Eigen::MatrixXd> feedForward(std::vector<Eigen::MatrixXd> _input) {
+	std::vector<Eigen::MatrixXd> feedForward(const std::vector<Eigen::MatrixXd> &_input) {
 		std::vector<Eigen::MatrixXd> pooled;
 		pooled.reserve(_input.size());
 		

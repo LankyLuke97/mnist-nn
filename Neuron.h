@@ -12,7 +12,7 @@ public:
 		weights = Eigen::RowVectorXd::Random(inputs);
 	}
 
-	double sigmoidActivation(Eigen::RowVectorXd x) {
+	double sigmoidActivation(const Eigen::RowVectorXd &x) {
 		return 1.0f / (1.0f + exp((weights.array() * x.array()).sum() + bias));
 	}
 };

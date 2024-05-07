@@ -15,7 +15,7 @@ public:
 		weights = Eigen::MatrixXd::Random(numberFeatures, windowHeight * windowWidth) / sqrt(windowHeight * windowWidth);
 	}
 
-	std::vector<Eigen::MatrixXd> feedForward(std::vector<Eigen::MatrixXd> _input) {
+	std::vector<Eigen::MatrixXd> feedForward(const std::vector<Eigen::MatrixXd> &_input) {
 		/*
 		* Input is a w * (j * k * m) matrix, where:
 		* w is the flattened window size (windowHeight * windowWidth)

@@ -36,7 +36,7 @@ public:
 		return oneHotEncoded;
 	}
 
-	static Eigen::MatrixXd convolveInput(Eigen::MatrixXd input, int stride, int windowHeight, int windowWidth, int origInputHeight, int origInputWidth) {
+	static Eigen::MatrixXd convolveInput(const Eigen::MatrixXd & input, int stride, int windowHeight, int windowWidth, int origInputHeight, int origInputWidth) {
 		int extra = stride > 1 ? 1 : 0;
 		int outputRows = ((origInputHeight - windowHeight) / stride) + 1;
 		int outputCols = ((origInputWidth - windowWidth) / stride) + 1;

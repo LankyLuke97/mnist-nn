@@ -81,7 +81,6 @@ int main() {
     Eigen::MatrixXd pooledFlattened;
     Eigen::MatrixXd output;
 
-    Helper::displayCharacter(Eigen::VectorXd(trainingImages.row(50)), 28);
 
     for(int batchSize : batchSizes) {
         auto start = std::chrono::high_resolution_clock::now();
@@ -89,8 +88,8 @@ int main() {
         for(int i = 0; i < trainingImages.rows(); i += batchSize) {
             input = { trainingImages(Eigen::seqN(i, batchSize), Eigen::all) };
 
-            mapped = testConv.feedForward(input);
-            pooled = testPool.feedForward(mapped);
+            mapped = testConv.feedForward(input); // Vector: 1 element for each feature map, each contaning m rows by n columns, where m is the number of images and n is the number of features
+            pooled = testPool.feedForward(mapped);// Vector: 1 element for each feature map, each contaning m rows by n columns, where m is the number of images and n is the number of features
 
             pooledFlattened.resize(batchSize, pooled.size() * pooled[0].cols());
             int colOffset = pooled[0].cols();
@@ -99,7 +98,13 @@ int main() {
                 pooledFlattened.middleCols(colOffset * i, colOffset) = pooled[i];
             }
 
+            if(i == 0)
+                std::cout  << pooledFlattened.rows() << ", " << pooledFlattened.cols() << std::endl;
+
             output = testConnected.feedForward(pooledFlattened.transpose()); // ---- this transpose needs to go - it's because I had to reverse the matrices elsewhere for the maths to work
+
+            if(i == 0)
+                std::cout << output.rows() << ", " << output.cols() << std::endl;
         }
 
         auto stop = std::chrono::high_resolution_clock::now();

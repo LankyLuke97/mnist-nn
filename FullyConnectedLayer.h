@@ -25,7 +25,7 @@ public:
 		}
 	}
 
-	Eigen::MatrixXd feedForward(Eigen::MatrixXd input) {
+	Eigen::MatrixXd feedForward(const Eigen::MatrixXd &input) {
 		assert(input.rows() == weights.cols());
 		assert(biases.rows() == weights.rows());
 

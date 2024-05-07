@@ -22,16 +22,16 @@ public:
 	std::vector<Layer> bestModel;
 
 	ConvolutionalNetwork(std::vector<int> layerStructure) : cost(0) {
-		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(Layer(layerStructure[i - 1], layerStructure[i]));
+		// for(int i = 1; i < layerStructure.size(); i++) layers.push_back(Layer(layerStructure[i - 1], layerStructure[i]));
 	}
 
 	ConvolutionalNetwork(std::vector<int> layerStructure, int earlyStopThreshold, double lambda, int costType, int weightInitialisationType) : cost(costType) {
 		this->lambda = lambda;
 		this->earlyStopThreshold = earlyStopThreshold;
-		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(Layer(layerStructure[i - 1], layerStructure[i], weightInitialisationType));
+		// for(int i = 1; i < layerStructure.size(); i++) layers.push_back(Layer(layerStructure[i - 1], layerStructure[i], weightInitialisationType));
 	}
 
-	std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> backPropagation(Eigen::MatrixXd trainingData, Eigen::MatrixXd oneHotEncodedLabels) {
+	std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> backPropagation(const Eigen::MatrixXd &trainingData, const Eigen::MatrixXd &oneHotEncodedLabels) {
 		/*
 		* trainingData is n*m, where m is the number of samples in the minibatch and n is the number of features
 		* oneHotEncodedLabels is m*10
@@ -97,11 +97,11 @@ public:
 		return std::make_pair(nabla_b, nabla_w);
 	}
 
-	Eigen::MatrixXd costCrossEntropyDerivative(Eigen::MatrixXd oneHotEncodedLabels, Eigen::MatrixXd predictions) {
+	Eigen::MatrixXd costCrossEntropyDerivative(const Eigen::MatrixXd &oneHotEncodedLabels, const Eigen::MatrixXd &predictions) {
 		return Eigen::MatrixXd::Zero(1, 1);
 	}
 
-	Eigen::MatrixXd costQuadraticDerivative(Eigen::MatrixXd predictions, Eigen::MatrixXd oneHotEncodedLabels) {
+	Eigen::MatrixXd costQuadraticDerivative(const Eigen::MatrixXd &predictions, const Eigen::MatrixXd &oneHotEncodedLabels) {
 		return predictions - oneHotEncodedLabels;
 	}
 
@@ -143,7 +143,7 @@ public:
 		return false;
 	}
 
-	int evaluate(Eigen::MatrixXd data, Eigen::MatrixXd labels) {
+	int evaluate(const Eigen::MatrixXd &data, const Eigen::MatrixXd &labels) {
 		int correct = 0;
 		Eigen::MatrixXd predictions = forwardPass(data);
 
@@ -159,7 +159,7 @@ public:
 		return correct;
 	}
 
-	Eigen::MatrixXd forwardPass(Eigen::MatrixXd activations) {
+	Eigen::MatrixXd forwardPass(const Eigen::MatrixXd &activations) {
 		/*
 		* Activations passed in first as an m*n matrix, where m is the number of samples and n is the number of features
 		*/
@@ -175,7 +175,7 @@ public:
 		return activations;
 	}
 
-	void stochasticGradientDescent(Eigen::MatrixXd trainingData, Eigen::MatrixXd trainingLabels, Eigen::MatrixXd validationData, Eigen::MatrixXd validationLabels, int epochs, int miniBatchSize, double learningRate, int learningRateSchedule, std::vector<double>& trainingCost, std::vector<double>& trainingAccuracy, std::vector<double>& evaluationCost, std::vector<double>& evaluationAccuracy) {
+	void stochasticGradientDescent(const Eigen::MatrixXd &trainingData, const Eigen::MatrixXd &trainingLabels, const Eigen::MatrixXd &validationData, const Eigen::MatrixXd &validationLabels, int epochs, int miniBatchSize, double learningRate, int learningRateSchedule, std::vector<double>& trainingCost, std::vector<double>& trainingAccuracy, std::vector<double>& evaluationCost, std::vector<double>& evaluationAccuracy) {
 		/*
 		* trainingData is n*m, where m is number of samples and n is number of featurs - in this case, 784 * ~50000
 		* trainingLabels is 10*m
@@ -246,7 +246,7 @@ public:
 		}
 	}
 
-	double totalCost(Eigen::MatrixXd data, Eigen::MatrixXd labels, double lambda) {
+	double totalCost(const Eigen::MatrixXd &data, const Eigen::MatrixXd &labels, double lambda) {
 		Eigen::MatrixXd activations = forwardPass(data);
 		double totalCost = cost.cost(activations, labels);
 		for(int i = 0; i < layers.size(); i++) {
@@ -256,7 +256,7 @@ public:
 		return totalCost;
 	}
 
-	void updateMiniBatch(Eigen::MatrixXd trainingMiniBatch, Eigen::MatrixXd oneHotEncodedMiniBatchLabels, double eta, double lambda, int n) {
+	void updateMiniBatch(const Eigen::MatrixXd &trainingMiniBatch, const Eigen::MatrixXd &oneHotEncodedMiniBatchLabels, double eta, double lambda, int n) {
 		/*
 		* trainingMiniBatch is n*m, where m is the number of samples in the minibatch and n is the number of features
 		* oneHotEncodedMiniBatchLabels0 is m*10

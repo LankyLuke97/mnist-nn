@@ -8,15 +8,17 @@ public:
 		this->type = type;
 	}
 
-	double cost(Eigen::MatrixXd activations, Eigen::MatrixXd labels) {
+	double cost(const Eigen::MatrixXd &activations, const Eigen::MatrixXd &labels) {
 		if(type == 0) {
 			return crossEntropy(activations, labels);
 		} else if(type == 1) {
 			return quadratic(activations, labels);
+		} else if(type == 2) {
+			return logLikelihood(activations, labels);
 		}
 	}
 
-	Eigen::MatrixXd delta(Eigen::MatrixXd zs, Eigen::MatrixXd activations, Eigen::MatrixXd labels) {
+	Eigen::MatrixXd delta(const Eigen::MatrixXd &zs, const Eigen::MatrixXd &activations, const Eigen::MatrixXd &labels) {
 		if(type == 0) {
 			return crossEntropyDelta(zs, activations, labels);
 		} else if(type == 1) {
@@ -26,7 +28,7 @@ public:
 private:
 	int type;
 
-	double crossEntropy(Eigen::MatrixXd activations, Eigen::MatrixXd labels) {
+	double crossEntropy(const Eigen::MatrixXd &activations, const Eigen::MatrixXd &labels) {
 		Eigen::MatrixXd ones = Eigen::MatrixXd::Ones(labels.rows(), labels.cols());
 		Eigen::MatrixXd neg_ones = -ones;
 
@@ -39,15 +41,15 @@ private:
 		return result.sum() / activations.cols();
 	}
 
-	Eigen::MatrixXd crossEntropyDelta(Eigen::MatrixXd zs, Eigen::MatrixXd activations, Eigen::MatrixXd labels) {
+	Eigen::MatrixXd crossEntropyDelta(const Eigen::MatrixXd &zs, const Eigen::MatrixXd &activations, const Eigen::MatrixXd &labels) {
 		return (activations - labels);
 	}
 
-	double quadratic(Eigen::MatrixXd activations, Eigen::MatrixXd labels) {
+	double quadratic(const Eigen::MatrixXd &activations, const Eigen::MatrixXd &labels) {
 		return 0.5 * (activations - labels).squaredNorm() / activations.cols();
 	}
 
-	Eigen::MatrixXd quadraticDelta(Eigen::MatrixXd zs, Eigen::MatrixXd activations, Eigen::MatrixXd labels) {
+	Eigen::MatrixXd quadraticDelta(const Eigen::MatrixXd &zs, const Eigen::MatrixXd &activations, const Eigen::MatrixXd &labels) {
 		return (activations - labels).cwiseProduct(zs.unaryExpr<double(*)(double)>(&Helper::sigmoidPrime));
 	}
 };
