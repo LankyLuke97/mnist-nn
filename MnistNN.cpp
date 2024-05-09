@@ -70,15 +70,25 @@ int main() {
 
     std::cout << "Added: \n" << (additionTest.colwise() + add) << std::endl;
 
+    Eigen::MatrixXd multiplicationTest(2, 3);
+    multiplicationTest << 1, 2, 3,
+        11, 12, 13;
+
+    std::cout << "Elementwise multiplication and then sum rows and then apply log: \n" << multiplicationTest.cwiseProduct(multiplicationTest).rowwise().sum().unaryExpr([](double x) { return std::log(x); }).sum() << std::endl;
+
     ConvLayer testConv = ConvLayer(20, 1, 5, 5);
     FullyConnectedLayer testConnected = FullyConnectedLayer(2880, 100);
+    FullyConnectedLayer outputConnected = FullyConnectedLayer(100, 10);
     PoolingLayer testPool = PoolingLayer(2, 2, 2);
 
+    Cost logLikelihood(2);
     std::vector<int> batchSizes = { 1, 10, 100 };
     std::vector<Eigen::MatrixXd> input;
+    Eigen::MatrixXd labels;
     std::vector<Eigen::MatrixXd> mapped;
     std::vector<Eigen::MatrixXd> pooled;
     Eigen::MatrixXd pooledFlattened;
+    Eigen::MatrixXd connected;
     Eigen::MatrixXd output;
 
 
@@ -87,6 +97,7 @@ int main() {
 
         for(int i = 0; i < trainingImages.rows(); i += batchSize) {
             input = { trainingImages(Eigen::seqN(i, batchSize), Eigen::all) };
+            labels = trainingLabels(Eigen::all, Eigen::seqN(i, batchSize));
 
             mapped = testConv.feedForward(input); // Vector: 1 element for each feature map, each contaning m rows by n columns, where m is the number of images and n is the number of features
             pooled = testPool.feedForward(mapped);// Vector: 1 element for each feature map, each contaning m rows by n columns, where m is the number of images and n is the number of features
@@ -99,12 +110,17 @@ int main() {
             }
 
             if(i == 0)
-                std::cout  << pooledFlattened.rows() << ", " << pooledFlattened.cols() << std::endl;
 
-            output = testConnected.feedForward(pooledFlattened.transpose()); // ---- this transpose needs to go - it's because I had to reverse the matrices elsewhere for the maths to work
+            connected = testConnected.feedForward(pooledFlattened.transpose()); // ---- this transpose needs to go - it's because I had to reverse the matrices elsewhere for the maths to work
+            output = outputConnected.feedForward(connected);
 
-            if(i == 0)
-                std::cout << output.rows() << ", " << output.cols() << std::endl;
+            if(i == 0) {
+                std::cout <<"pooledFlattened: " << pooledFlattened.rows() << ", " << pooledFlattened.cols() << std::endl;
+                std::cout << "connected: " << connected.rows() << ", " << connected.cols() << std::endl;
+                std::cout << "output: " << output.rows() << ", " << output.cols() << std::endl;
+                double cost = logLikelihood.cost(Helper::applyRowWiseSoftmax(output), labels);
+                std::cout << "Training cost: " << cost << std::endl;
+            }
         }
 
         auto stop = std::chrono::high_resolution_clock::now();

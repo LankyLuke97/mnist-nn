@@ -9,6 +9,9 @@ class Layer {
 public:
 	Eigen::VectorXd biases;
 	Eigen::MatrixXd weights;
+
+	Layer() {
+	}
 	
 	Layer(int inputs, int numberOfNeurons) {
 		biases = Eigen::VectorXd::Random(numberOfNeurons);

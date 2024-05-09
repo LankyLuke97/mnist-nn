@@ -159,7 +159,7 @@ public:
 		return correct;
 	}
 
-	Eigen::MatrixXd forwardPass(const Eigen::MatrixXd &activations) {
+	Eigen::MatrixXd forwardPass(Eigen::MatrixXd activations) {
 		/*
 		* Activations passed in first as an m*n matrix, where m is the number of samples and n is the number of features
 		*/

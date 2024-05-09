@@ -14,7 +14,7 @@ public:
 		} else if(type == 1) {
 			return quadratic(activations, labels);
 		} else if(type == 2) {
-			return logLikelihood(activations, labels);
+			return negativeLogLikelihood(activations, labels);
 		}
 	}
 
@@ -23,6 +23,8 @@ public:
 			return crossEntropyDelta(zs, activations, labels);
 		} else if(type == 1) {
 			return quadraticDelta(zs, activations, labels);
+		} else if(type == 2) {
+			return negativeLogLikelihoodDelta(zs, activations, labels);
 		}
 	}
 private:
@@ -51,5 +53,14 @@ private:
 
 	Eigen::MatrixXd quadraticDelta(const Eigen::MatrixXd &zs, const Eigen::MatrixXd &activations, const Eigen::MatrixXd &labels) {
 		return (activations - labels).cwiseProduct(zs.unaryExpr<double(*)(double)>(&Helper::sigmoidPrime));
+	}
+
+	double negativeLogLikelihood(const Eigen::MatrixXd &activations, const Eigen::MatrixXd &labels) {
+		return -activations.cwiseProduct(labels).colwise().sum().unaryExpr([](double x) { return std::log(x); }).sum() / activations.cols();
+	}
+	
+	Eigen::MatrixXd negativeLogLikelihoodDelta(const Eigen::MatrixXd& zs, const Eigen::MatrixXd& activations, const Eigen::MatrixXd& labels) {
+		return Helper::applyRowWiseSoftmax(activations) - Eigen::MatrixXd::Ones(activations.rows(), activations.cols());
+		// Specifically with reference to the final layer also being a softmax layer
 	}
 };
