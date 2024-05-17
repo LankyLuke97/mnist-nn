@@ -8,6 +8,8 @@
 
 class FullyConnectedLayer : Layer {
 public:
+	Eigen::VectorXd biases;
+	Eigen::MatrixXd weights;
 	FullyConnectedLayer(int inputs, int numberOfNeurons) {
 		biases = Eigen::VectorXd::Random(numberOfNeurons);
 		weights = scaledWeightInitialisation(inputs, numberOfNeurons);

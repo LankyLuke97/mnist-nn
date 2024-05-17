@@ -9,6 +9,8 @@
 class ConvLayer : Layer {
 public:
 	int numberFeatures, stride, windowHeight, windowWidth;
+	Eigen::VectorXd biases;
+	Eigen::MatrixXd weights;
 
 	ConvLayer(int numberFeatures, int stride, int windowHeight, int windowWidth) : numberFeatures(numberFeatures), stride(stride), windowHeight(windowHeight), windowWidth(windowWidth) {
 		biases = Eigen::VectorXd::Random(numberFeatures);

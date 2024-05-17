@@ -19,9 +19,9 @@ int main() {
     std::string traininglabelsFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\train-labels.idx1-ubyte";
     std::string testImagesFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\t10k-images.idx3-ubyte";
     std::string testlabelsFile = "C:\\Users\\lhowd\\Documents\\Studio\\NeuralNetworks\\MnistNN\\t10k-labels.idx1-ubyte";
-    Eigen::MatrixXd trainingImages = DataReader::readImageFile(trainingImagesFile).transpose();
+    Eigen::MatrixXd trainingImages = DataReader::readImageFile(trainingImagesFile).transpose().transpose();
     Eigen::MatrixXd trainingLabels = Helper::oneHotEncode(DataReader::readLableFile(traininglabelsFile), 10).transpose();
-    Eigen::MatrixXd testImages = DataReader::readImageFile(testImagesFile).transpose();
+    Eigen::MatrixXd testImages = DataReader::readImageFile(testImagesFile).transpose().transpose();
     Eigen::MatrixXd testLabels = Helper::oneHotEncode(DataReader::readLableFile(testlabelsFile), 10).transpose();
 
     std::cout << trainingImages.rows() << ", " << trainingImages.cols() << std::endl;
@@ -43,6 +43,8 @@ int main() {
     stop = std::chrono::high_resolution_clock::now();
     std::cout << "Convolved Matrix:\n" << reshapedTestImages.rows() << "x" << reshapedTestImages.cols() << "\nTook " << (std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count()) << std::endl;
     */
+
+ /*
     PoolingLayer pool = PoolingLayer(2, 2, 2);
 
     Eigen::MatrixXd test(3, 16);
@@ -135,14 +137,14 @@ int main() {
                 to precompute the indeces needed to slice the incoming matrix into its\n\
                 convolved version, rather than looping each time? I suspect yes. Explore\n\
                 this next." << std::endl;
-
-    /*double validationRatio = 0.90f;
+*/
+    double validationRatio = 0.90f;
     int splitIndex = static_cast<int>(trainingImages.cols() * validationRatio);
-    int epochs = 1000;
+    int epochs = 30;
     int miniBatchSize = 10;
     float learningRate = 3.0f;
     int learningRateSchedule = 6;
-
+/*
     std::vector<double> convolutionalNetwork_trainingCost;
     std::vector<double> convolutionalNetwork_trainingAccuracy;
     std::vector<double> convolutionalNetwork_validationCost;
@@ -152,9 +154,9 @@ int main() {
     convolutionalNetwork.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), epochs, miniBatchSize, learningRate, learningRateSchedule, convolutionalNetwork_trainingCost, convolutionalNetwork_trainingAccuracy, convolutionalNetwork_validationCost, convolutionalNetwork_validationAccuracy);
 
     int testCorrect30_2 = convolutionalNetwork.evaluate(testImages, testLabels);
-    std::cout << "On test data, 30 hidden neurons, lambda = 2: " << testCorrect30_2 << " / " << testImages.cols() << std::endl;*/
-
-    /*std::vector<double> network30_2_trainingCost;
+    std::cout << "On test data, 30 hidden neurons, lambda = 2: " << testCorrect30_2 << " / " << testImages.cols() << std::endl;
+*/
+    std::vector<double> network30_2_trainingCost;
     std::vector<double> network30_2_trainingAccuracy;
     std::vector<double> network30_2_validationCost;
     std::vector<double> network30_2_validationAccuracy;
@@ -163,7 +165,7 @@ int main() {
     network30_2.stochasticGradientDescent(trainingImages.leftCols(splitIndex), trainingLabels.leftCols(splitIndex), trainingImages.rightCols(trainingImages.cols() - splitIndex), trainingLabels.rightCols(trainingLabels.cols() - splitIndex), epochs, miniBatchSize, learningRate, learningRateSchedule, network30_2_trainingCost, network30_2_trainingAccuracy, network30_2_validationCost, network30_2_validationAccuracy);
 
     int testCorrect30_2 = network30_2.evaluate(testImages, testLabels);
-    std::cout << "On test data, 30 hidden neurons, lambda = 2: " << testCorrect30_2 << " / " << testImages.cols() << std::endl;*/
+    std::cout << "On test data, 30 hidden neurons, lambda = 2: " << testCorrect30_2 << " / " << testImages.cols() << std::endl;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

@@ -7,9 +7,13 @@
 
 class Layer {
 public:
-	Eigen::VectorXd biases;
-	Eigen::MatrixXd weights;
-
+	virtual Eigen::MatrixXd backwardPass(const Eigen::MatrixXd& upstream) = 0;
+	virtual Eigen::MatrixXd forwardPass(const Eigen::MatrixXd& input) = 0;
+	virtual void update(double step) = 0;
+	virtual Eigen::VectorXd getBiases() = 0;
+	virtual Eigen::MatrixXd getWeights() = 0;
+	virtual std::unique_ptr<Layer> clone() const = 0;
+	/*
 	Layer() {
 	}
 	
@@ -43,5 +47,5 @@ public:
 
 	Eigen::MatrixXd largeWeightInitialisation(int inputs, int numberOfNeurons) {
 		return Eigen::MatrixXd::Random(numberOfNeurons, inputs);
-	}
+	}*/
 };

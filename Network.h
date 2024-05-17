@@ -6,6 +6,7 @@
 #include "Cost.h"
 #include "Helper.h"
 #include "Layer.h"
+#include "FullyConnected_Sigmoid.h"
 
 class Network {
 public:
@@ -16,38 +17,38 @@ public:
 	int etaReductionCount = 0;
 	double lambda = 0.0;
 	int learningSchedule;
-	std::vector<Layer> layers;
+	std::vector<std::unique_ptr<Layer>> layers;
 
 	double bestAccuracy = 0.0;
-	std::vector<Layer> bestModel;
+	std::vector<std::unique_ptr<Layer>> bestModel;
 
 	Network(std::vector<int> layerStructure) : cost(0) {
-		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(Layer(layerStructure[i - 1], layerStructure[i]));
+		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(std::make_unique<FullyConnected_Sigmoid>(layerStructure[i - 1], layerStructure[i]));
 	}
 
 	Network(std::vector<int> layerStructure, int earlyStopThreshold, double lambda, int costType, int weightInitialisationType) : cost(costType) {
 		this->lambda = lambda;
 		this->earlyStopThreshold = earlyStopThreshold;
-		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(Layer(layerStructure[i - 1], layerStructure[i], weightInitialisationType));
+		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(std::make_unique<FullyConnected_Sigmoid>(layerStructure[i - 1], layerStructure[i], weightInitialisationType));
 	}
 
-	std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> backPropagation(const Eigen::MatrixXd &trainingData, const Eigen::MatrixXd &oneHotEncodedLabels) {
+/*	std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> backPropagation(const Eigen::MatrixXd& trainingData, const Eigen::MatrixXd& oneHotEncodedLabels) {
 		/*
 		* trainingData is n*m, where m is the number of samples in the minibatch and n is the number of features
 		* oneHotEncodedLabels is m*10
-		*/
+		* /
 		std::vector<Eigen::MatrixXd> nabla_b(layers.size(), Eigen::MatrixXd::Zero(1, 1));
 		std::vector<Eigen::MatrixXd> nabla_w(layers.size(), Eigen::MatrixXd::Zero(1, 1));
 
 		/* for(int i = 0; i < layers.size(); i++) {
 			nabla_b.push_back(Eigen::RowVectorXd::Zero(layers[i].biases.cols()));
 			nabla_w.push_back(Eigen::MatrixXd::Zero(layers[i].weights.rows(), layers[i].weights.cols()));
-		} */
+		} * /
 
 		/*
 		* layers.biases = [30 * 1, 10 * 1]
 		* layers.weights = [30 * 784, 10 * 30]
-		*/
+		* /
 
 		Eigen::MatrixXd activation = trainingData;
 		std::vector<Eigen::MatrixXd> activations = { trainingData };
@@ -67,7 +68,7 @@ public:
 		* Delta dimensions here will be 10 * m
 		* Important here - weights and biases both contain 2 items, as does zs, but num_layers is 3, as is the length 
 		* of activations, as we start with the input data
-		*/
+		* /
 
 		Eigen::MatrixXd delta = cost.delta(zs.back(), activations.back(), oneHotEncodedLabels);
 		nabla_b.reserve(layers.size());
@@ -77,13 +78,13 @@ public:
 
 		/* 
 		* At this point, nabla_b is [ _, 10 * m, nabla_w is [ _, 10 * 30]
-		*/
+		* /
 
 		for(int i = 2; i < activations.size(); i++) {
 			/*
 			* i = 2, sp and zs[0] = 30 * m, delta is 10 * m initially, layers[1].weights.transpose is 30 * 10, delta ends as 30 * m
 			* activations[0] = 784 * m
-			*/
+			* /
 			Eigen::MatrixXd sp = zs[zs.size() - i].unaryExpr<double(*)(double)>(&Helper::sigmoidPrime);
 			delta = (layers[layers.size() - i + 1].weights.transpose() * delta).cwiseProduct(sp);
 			nabla_b[nabla_b.size() - i] = delta;
@@ -92,10 +93,11 @@ public:
 
 		/*
 		* At this point, nabla_b is [m * 30, m * 10], nabla_w is [784 * 30, 30 * 10] - check whether these should be reversed (i.e n * m)
-		*/
+		* /
 
 		return std::make_pair(nabla_b, nabla_w);
 	}
+*/
 
 	Eigen::MatrixXd costCrossEntropyDerivative(const Eigen::MatrixXd &oneHotEncodedLabels, const Eigen::MatrixXd &predictions) {
 		return Eigen::MatrixXd::Zero(1,1);
@@ -165,13 +167,9 @@ public:
 		*/
 
 		for(int i = 0; i < layers.size(); i++) {
-			activations = layers[i].feedForward(activations).unaryExpr<double(*)(double)>(&Helper::sigmoid);
+			activations = layers[i]->forwardPass(activations);
 		}
 
-		/*
-		* At this point, activations should be an m*10 matrix, where m is the number of samples
-		* and each column corresponds to the likelihood of that sample being a certain digit
-		*/
 		return activations;
 	}
 
@@ -215,9 +213,25 @@ public:
 				}
 
 				Eigen::MatrixXd miniBatchData = trainingData(Eigen::all, miniBatchIndices);
-				Eigen::MatrixXd miniBatchLabels = trainingLabels(Eigen::all,miniBatchIndices);
+				Eigen::MatrixXd miniBatchLabels = trainingLabels(Eigen::all, miniBatchIndices);
+				double step = eta / miniBatchData.cols();
 
-				updateMiniBatch(miniBatchData, miniBatchLabels, eta, lambda, numberOfTrainingInputs);
+				Eigen::MatrixXd input = miniBatchData;
+
+				for(auto it = layers.begin(); it != layers.end(); it++) {
+					input = (*it)->forwardPass(input);
+				}
+
+				Eigen::MatrixXd upstream = cost.delta(input, input, miniBatchLabels); // This needs to be integrated into the final layers - as cost will just be another layer eventually
+																					  // The first 'input' here was zs.back() - which is the interimOutput of the current layers.
+
+				for(auto it = layers.rbegin(); it != layers.rend(); it++) {
+					upstream = (*it)->backwardPass(upstream);
+				}
+
+				for(auto it = layers.begin(); it != layers.end(); it++) {
+					(*it)->update(step);
+				}
 			}
 
 			int correct = evaluate(validationData, validationLabels);
@@ -230,7 +244,11 @@ public:
 
 			if(evaluationAccuracy.back() > bestAccuracy) {
 				bestAccuracy = evaluationAccuracy.back();
-				bestModel = layers;
+				bestModel.clear();
+				bestModel.reserve(layers.size());
+				for(const auto& layer : layers) {
+					bestModel.push_back(layer->clone());
+				}
 			}
 			//std::cout << "Cost on training data: " << trainingCost.back() << std::endl;
 			//std::cout << "Accuracy on training data: " << trainingAccuracy.back() << "/" << trainingData.cols() << std::endl;
@@ -250,28 +268,29 @@ public:
 		Eigen::MatrixXd activations = forwardPass(data);
 		double totalCost = cost.cost(activations, labels);
 		for(int i = 0; i < layers.size(); i++) {
-			totalCost += 0.5 * (lambda / data.cols()) * layers[i].weights.squaredNorm();
+			totalCost += 0.5 * (lambda / data.cols()) * layers[i]->getWeights().squaredNorm();
 		}
 
 		return totalCost;
 	}
-
+/*
 	void updateMiniBatch(const Eigen::MatrixXd &trainingMiniBatch, const Eigen::MatrixXd &oneHotEncodedMiniBatchLabels, double eta, double lambda, int n) {
 		/*
 		* trainingMiniBatch is n*m, where m is the number of samples in the minibatch and n is the number of features
 		* oneHotEncodedMiniBatchLabels0 is m*10
-		*/
+		* /
 		std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> pair = backPropagation(trainingMiniBatch, oneHotEncodedMiniBatchLabels);
 		std::vector<Eigen::MatrixXd> nabla_b = pair.first;
 		std::vector<Eigen::MatrixXd> nabla_w = pair.second;
 
 		/*
 		* At this point, nabla_b is [m * 30, m * 10], nabla_w is [784 * 30, 30 * 10] - check whether these should be reversed (i.e n * m)
-		*/
+		* /
 
 		for(int i = 0; i < layers.size(); i++) {
-			layers[i].biases = layers[i].biases - ((eta / trainingMiniBatch.cols()) * nabla_b[i].rowwise().sum());
+			layers[i].biases = layers[i].biases - () * nabla_b[i].rowwise().sum());
 			layers[i].weights = ((1 - eta * (lambda / n)) * layers[i].weights) - ((eta / trainingMiniBatch.cols()) * nabla_w[i]);
 		}
 	}
+*/
 };
