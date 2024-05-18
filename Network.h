@@ -4,13 +4,14 @@
 #include <numeric>
 #include <vector>
 #include "Cost.h"
+#include "CrossEntropy_Cost.h"
 #include "Helper.h"
 #include "Layer.h"
 #include "FullyConnected_Sigmoid.h"
 
 class Network {
 public:
-	Cost cost;
+	std::unique_ptr<Cost> cost;
 	int stepsOnCurrentLearningRate = 0;
 	int earlyStopThreshold = -1;
 	double eta;
@@ -22,14 +23,16 @@ public:
 	double bestAccuracy = 0.0;
 	std::vector<std::unique_ptr<Layer>> bestModel;
 
-	Network(std::vector<int> layerStructure) : cost(0) {
+	Network(std::vector<int> layerStructure) {
 		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(std::make_unique<FullyConnected_Sigmoid>(layerStructure[i - 1], layerStructure[i]));
+		cost = std::make_unique<CrossEntropy_Cost>();
 	}
 
-	Network(std::vector<int> layerStructure, int earlyStopThreshold, double lambda, int costType, int weightInitialisationType) : cost(costType) {
+	Network(std::vector<int> layerStructure, int earlyStopThreshold, double lambda, int costType, int weightInitialisationType) {
 		this->lambda = lambda;
 		this->earlyStopThreshold = earlyStopThreshold;
 		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(std::make_unique<FullyConnected_Sigmoid>(layerStructure[i - 1], layerStructure[i], weightInitialisationType));
+		cost = std::make_unique<CrossEntropy_Cost>();
 	}
 
 /*	std::pair<std::vector<Eigen::MatrixXd>, std::vector<Eigen::MatrixXd>> backPropagation(const Eigen::MatrixXd& trainingData, const Eigen::MatrixXd& oneHotEncodedLabels) {
@@ -98,14 +101,6 @@ public:
 		return std::make_pair(nabla_b, nabla_w);
 	}
 */
-
-	Eigen::MatrixXd costCrossEntropyDerivative(const Eigen::MatrixXd &oneHotEncodedLabels, const Eigen::MatrixXd &predictions) {
-		return Eigen::MatrixXd::Zero(1,1);
-	}
-
-	Eigen::MatrixXd costQuadraticDerivative(const Eigen::MatrixXd &predictions, const Eigen::MatrixXd &oneHotEncodedLabels) {
-		return predictions - oneHotEncodedLabels;
-	}
 
 	bool earlyStop(const std::vector<double> &accuracies) {
 		if(accuracies.size() < earlyStopThreshold) return false;
@@ -222,9 +217,9 @@ public:
 					input = (*it)->forwardPass(input);
 				}
 
-				Eigen::MatrixXd upstream = cost.delta(input, input, miniBatchLabels); // This needs to be integrated into the final layers - as cost will just be another layer eventually
+				Eigen::MatrixXd upstream = cost->calculateDelta(input, miniBatchLabels); // This needs to be integrated into the final layers - as cost will just be another layer eventually
 																					  // The first 'input' here was zs.back() - which is the interimOutput of the current layers.
-
+				
 				for(auto it = layers.rbegin(); it != layers.rend(); it++) {
 					upstream = (*it)->backwardPass(upstream);
 				}
@@ -266,7 +261,7 @@ public:
 
 	double totalCost(const Eigen::MatrixXd &data, const Eigen::MatrixXd &labels, double lambda) {
 		Eigen::MatrixXd activations = forwardPass(data);
-		double totalCost = cost.cost(activations, labels);
+		double totalCost = cost->calculateCost(activations, labels);
 		for(int i = 0; i < layers.size(); i++) {
 			totalCost += 0.5 * (lambda / data.cols()) * layers[i]->getWeights().squaredNorm();
 		}

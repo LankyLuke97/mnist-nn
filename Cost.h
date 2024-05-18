@@ -4,7 +4,9 @@
 
 class Cost {
 public:
-	Cost(int type) {
+	virtual double calculateCost(const Eigen::MatrixXd& inputs, const Eigen::MatrixXd& labels) = 0;
+	virtual Eigen::MatrixXd calculateDelta(const Eigen::MatrixXd& inputs, const Eigen::MatrixXd& labels) = 0;
+	/*Cost(int type) {
 		this->type = type;
 	}
 
@@ -62,5 +64,5 @@ private:
 	Eigen::MatrixXd negativeLogLikelihoodDelta(const Eigen::MatrixXd& zs, const Eigen::MatrixXd& activations, const Eigen::MatrixXd& labels) {
 		return Helper::applyRowWiseSoftmax(activations) - Eigen::MatrixXd::Ones(activations.rows(), activations.cols());
 		// Specifically with reference to the final layer also being a softmax layer
-	}
+	}*/
 };
