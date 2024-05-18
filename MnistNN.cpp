@@ -138,11 +138,11 @@ int main() {
                 convolved version, rather than looping each time? I suspect yes. Explore\n\
                 this next." << std::endl;
 */
-    double validationRatio = 0.90f;
+    double validationRatio = 0.90;
     int splitIndex = static_cast<int>(trainingImages.cols() * validationRatio);
     int epochs = 30;
     int miniBatchSize = 10;
-    float learningRate = 3.0f;
+    double learningRate = 3.0;
     int learningRateSchedule = 6;
 /*
     std::vector<double> convolutionalNetwork_trainingCost;

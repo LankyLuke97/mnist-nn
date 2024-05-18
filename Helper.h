@@ -13,6 +13,26 @@ public:
 		return sig * (1 - sig);
 	}
 
+	static double relu(double input) {
+		if(input <= 0.0) return 0.0;
+		else return input;
+	}
+
+	static double reluPrime(double input) {
+		if(input <= 0.0) return 0.0;
+		else return 1.0;
+	}
+
+	static double leakyRelu(double input) {
+		if(input <= 0.0) return 0.01 * input;
+		else return input;
+	}
+
+	static double leakyReluPrime(double input) {
+		if(input <= 0.0) return 0.01;
+		else return 1.0;
+	}
+
 	static Eigen::RowVectorXd softmax(Eigen::VectorXd input) {
 		Eigen::RowVectorXd exponential = input.array().exp();
 		return exponential / exponential.sum();

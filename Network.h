@@ -8,6 +8,7 @@
 #include "Helper.h"
 #include "Layer.h"
 #include "FullyConnected_Sigmoid.h"
+#include "FullyConnected_ReLU.h"
 
 class Network {
 public:
@@ -24,14 +25,14 @@ public:
 	std::vector<std::unique_ptr<Layer>> bestModel;
 
 	Network(std::vector<int> layerStructure) {
-		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(std::make_unique<FullyConnected_Sigmoid>(layerStructure[i - 1], layerStructure[i]));
+		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(std::make_unique<FullyConnected_ReLU>(layerStructure[i - 1], layerStructure[i]));
 		cost = std::make_unique<CrossEntropy_Cost>();
 	}
 
 	Network(std::vector<int> layerStructure, int earlyStopThreshold, double lambda, int costType, int weightInitialisationType) {
 		this->lambda = lambda;
 		this->earlyStopThreshold = earlyStopThreshold;
-		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(std::make_unique<FullyConnected_Sigmoid>(layerStructure[i - 1], layerStructure[i], weightInitialisationType));
+		for(int i = 1; i < layerStructure.size(); i++) layers.push_back(std::make_unique<FullyConnected_ReLU>(layerStructure[i - 1], layerStructure[i], weightInitialisationType));
 		cost = std::make_unique<CrossEntropy_Cost>();
 	}
 
